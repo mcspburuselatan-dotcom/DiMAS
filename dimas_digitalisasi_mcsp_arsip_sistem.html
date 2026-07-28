@@ -1,0 +1,1877 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DiMAS - Digitalisasi MCSP Arsip Sistem</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            800: '#3730a3',
+                        },
+                        secondary: {
+                            50: '#f8fafc',
+                            100: '#f1f5f9',
+                            500: '#64748b',
+                            700: '#334155',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* Printable Report specific styles */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #printArea, #printArea * {
+                visibility: visible;
+            }
+            #printArea {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                padding: 20px;
+                background: white;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased overflow-x-hidden">
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="fixed top-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none"></div>
+
+    <!-- LOGIN SCREEN -->
+    <div id="loginView" class="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-indigo-50 via-slate-50 to-blue-100">
+        <div class="bg-white rounded-2xl shadow-xl border border-slate-100 max-w-md w-full p-8 relative overflow-hidden">
+            <div class="absolute -top-12 -right-12 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl"></div>
+            <div class="absolute -bottom-12 -left-12 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl"></div>
+
+            <div class="text-center mb-8 relative z-10">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-indigo-600 text-white shadow-lg shadow-indigo-200 mb-4">
+                    <i class="fa-solid fa-folder-tree text-2xl"></i>
+                </div>
+                <h1 class="text-2xl font-bold text-slate-800 tracking-tight">DiMAS</h1>
+                <p class="text-xs font-semibold text-indigo-600 tracking-widest uppercase mt-0.5">Digitalisasi MCSP Arsip Sistem</p>
+                <p class="text-xs text-slate-500 mt-2">Silahkan masuk ke akun Anda untuk melanjutkan</p>
+            </div>
+
+            <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-5 relative z-10">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">Username</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
+                            <i class="fa-solid fa-user text-sm"></i>
+                        </span>
+                        <input type="text" id="loginUsername" required placeholder="Masukkan username"
+                            class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">Kata Sandi</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
+                            <i class="fa-solid fa-lock text-sm"></i>
+                        </span>
+                        <input type="password" id="loginPassword" required placeholder="••••••••"
+                            class="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition">
+                        <button type="button" onclick="togglePasswordVisibility('loginPassword', 'loginPasswordIcon')" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600">
+                            <i id="loginPasswordIcon" class="fa-solid fa-eye text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl shadow-lg shadow-indigo-600/20 transition duration-200 flex items-center justify-center gap-2">
+                    <span>Masuk Sistem</span>
+                    <i class="fa-solid fa-arrow-right text-sm"></i>
+                </button>
+            </form>
+
+            <!-- Quick Demo Users Panel -->
+            <div class="mt-8 pt-6 border-t border-slate-100 relative z-10">
+                <p class="text-xs text-center text-slate-400 mb-3 font-medium">Pilih Akun Demo Cepat:</p>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="quickLogin('inspektorat_admin', 'admin123')" class="p-2.5 bg-indigo-50 hover:bg-indigo-100 border border-indigo-100 rounded-xl text-left transition">
+                        <p class="text-xs font-bold text-indigo-900">Admin Utama</p>
+                        <p class="text-[10px] text-indigo-600 font-mono">inspektorat_admin</p>
+                    </button>
+                    <button onclick="quickLogin('pic_perencanaan', 'user123')" class="p-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl text-left transition">
+                        <p class="text-xs font-bold text-slate-800">User Perencanaan</p>
+                        <p class="text-[10px] text-slate-500 font-mono">pic_perencanaan</p>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN DASHBOARD & SYSTEM APP -->
+    <div id="appLayout" class="hidden min-h-screen flex flex-col md:flex-row">
+
+        <!-- Mobile Header Overlay -->
+        <div id="sidebarBackdrop" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-30 hidden md:hidden"></div>
+
+        <!-- SIDEBAR NAVIGATION -->
+        <aside id="sidebar" class="fixed md:static inset-y-0 left-0 z-40 w-64 bg-white border-r border-slate-200/80 flex flex-col transition-transform duration-300 transform -translate-x-full md:translate-x-0 shadow-sm">
+            
+            <!-- App Brand Header -->
+            <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-lg shadow-md shadow-indigo-200">
+                        <i class="fa-solid fa-folder-tree"></i>
+                    </div>
+                    <div>
+                        <h2 class="font-bold text-slate-800 text-lg leading-tight tracking-tight">DiMAS</h2>
+                        <p class="text-[10px] font-semibold text-indigo-600 tracking-wider">MCSP ARSIP</p>
+                    </div>
+                </div>
+                <button onclick="toggleSidebar()" class="md:hidden text-slate-400 hover:text-slate-600 p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Navigation Links -->
+            <nav class="flex-1 p-4 space-y-1 overflow-y-auto custom-scrollbar">
+                <p class="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">Navigasi Utama</p>
+
+                <button onclick="switchView('dashboard')" id="nav-dashboard" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition">
+                    <i class="fa-solid fa-chart-pie w-5 text-slate-400"></i>
+                    <span>Dashboard</span>
+                </button>
+
+                <button onclick="switchView('documents')" id="nav-documents" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition">
+                    <i class="fa-solid fa-file-contract w-5 text-slate-400"></i>
+                    <span>Data Dokumen</span>
+                </button>
+
+                <button onclick="switchView('reports')" id="nav-reports" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition">
+                    <i class="fa-solid fa-file-invoice w-5 text-slate-400"></i>
+                    <span>Laporan</span>
+                </button>
+
+                <div id="adminMenuSection" class="pt-4 space-y-1">
+                    <p class="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">Pengaturan Inspektorat</p>
+                    
+                    <button onclick="switchView('users')" id="nav-users" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition">
+                        <i class="fa-solid fa-users-gear w-5 text-slate-400"></i>
+                        <span>Pengguna</span>
+                    </button>
+
+                    <button onclick="switchView('activity')" id="nav-activity" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition">
+                        <i class="fa-solid fa-clock-rotate-left w-5 text-slate-400"></i>
+                        <span>Riwayat Aktivitas</span>
+                    </button>
+                </div>
+            </nav>
+
+            <!-- User Session Info & Logout Footer -->
+            <div class="p-4 border-t border-slate-100 bg-slate-50/50">
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="w-9 h-9 rounded-full bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center text-sm ring-2 ring-indigo-200" id="userAvatar">
+                        U
+                    </div>
+                    <div class="overflow-hidden">
+                        <p id="userNameDisplay" class="text-xs font-bold text-slate-800 truncate">Pengguna</p>
+                        <p id="userRoleBadge" class="text-[10px] text-slate-500 font-medium">Role</p>
+                    </div>
+                </div>
+                <button onclick="handleLogout()" class="w-full py-2 px-3 bg-white border border-slate-200 text-slate-700 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 font-medium rounded-xl text-xs transition flex items-center justify-center gap-2 shadow-sm">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span>Keluar Sistem</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT AREA -->
+        <div class="flex-1 flex flex-col min-w-0 bg-slate-50">
+            
+            <!-- TOP NAVBAR HEADER -->
+            <header class="bg-white border-b border-slate-200/80 sticky top-0 z-20 px-4 md:px-6 py-3.5 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <button onclick="toggleSidebar()" class="p-2 text-slate-600 hover:bg-slate-100 rounded-xl transition focus:outline-none">
+                        <i class="fa-solid fa-bars text-lg"></i>
+                    </button>
+                    <div>
+                        <h3 id="currentViewTitle" class="text-base font-bold text-slate-800">Dashboard</h3>
+                        <p class="text-xs text-slate-400 hidden sm:block">Digitalisasi MCSP Arsip Sistem Inspektorat</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-indigo-50 border border-indigo-100 rounded-xl text-xs font-medium text-indigo-700">
+                        <i class="fa-solid fa-shield-halved text-indigo-500"></i>
+                        <span id="headerRoleLabel">Admin Utama</span>
+                    </div>
+                    <div id="driveMainFolderBtn" class="hidden">
+                        <a href="https://drive.google.com" target="_blank" class="p-2 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition">
+                            <i class="fa-brands fa-google-drive text-base"></i>
+                            <span class="hidden md:inline">Drive MCSP</span>
+                        </a>
+                    </div>
+                </div>
+            </header>
+
+            <!-- DYNAMIC VIEW PAGES -->
+            <main class="flex-1 p-4 md:p-6 overflow-y-auto">
+
+                <!-- 1. DASHBOARD VIEW -->
+                <section id="dashboardView" class="view-section space-y-6">
+                    
+                    <!-- Filters Bar -->
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-sm">Filter Dashboard</h4>
+                            <p class="text-xs text-slate-500">Pilih tahun dan area MCSP untuk memfilter statistik data</p>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-3">
+                            <div>
+                                <label class="block text-[10px] font-semibold text-slate-400 uppercase mb-1">Tahun</label>
+                                <select id="dashYearFilter" onchange="updateDashboardStats()" class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                    <option value="2025">2025</option>
+                                    <option value="2026">2026</option>
+                                    <option value="2027">2027</option>
+                                    <option value="2028">2028</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-semibold text-slate-400 uppercase mb-1">Area MCSP</label>
+                                <select id="dashAreaFilter" onchange="updateDashboardStats()" class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                    <option value="ALL">Semua Area Terdaftar</option>
+                                    <!-- Dynamic MCSP Options -->
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Metrics Cards -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="text-xs font-semibold text-slate-500">Total Dokumen</span>
+                                <div class="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                                    <i class="fa-solid fa-file-lines"></i>
+                                </div>
+                            </div>
+                            <h3 id="statTotalDocs" class="text-2xl font-bold text-slate-800">0</h3>
+                            <p class="text-[11px] text-slate-400 mt-1">Dokumen terarsip dalam sistem</p>
+                        </div>
+
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="text-xs font-semibold text-slate-500">Dokumen Lengkap</span>
+                                <div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                                    <i class="fa-solid fa-circle-check"></i>
+                                </div>
+                            </div>
+                            <h3 id="statCompleteDocs" class="text-2xl font-bold text-slate-800">0</h3>
+                            <p class="text-[11px] text-emerald-600 font-medium mt-1" id="statCompletePercentage">0% Terverifikasi</p>
+                        </div>
+
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="text-xs font-semibold text-slate-500">Capaian Target</span>
+                                <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                                    <i class="fa-solid fa-bullseye"></i>
+                                </div>
+                            </div>
+                            <h3 id="statTargetPercent" class="text-2xl font-bold text-slate-800">0%</h3>
+                            <p class="text-[11px] text-slate-400 mt-1" id="statTargetRatio">0 dari 0 Target</p>
+                        </div>
+
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="text-xs font-semibold text-slate-500">Area MCSP Aktif</span>
+                                <div class="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+                                    <i class="fa-solid fa-layer-group"></i>
+                                </div>
+                            </div>
+                            <h3 id="statActiveAreas" class="text-2xl font-bold text-slate-800">8</h3>
+                            <p class="text-[11px] text-slate-400 mt-1">Sektor Pengawasan MCSP</p>
+                        </div>
+                    </div>
+
+                    <!-- Charts Grid -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="lg:col-span-2 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
+                            <h4 class="font-bold text-slate-800 text-sm mb-4">Grafik Input Dokumen Per Area MCSP</h4>
+                            <div class="h-64">
+                                <canvas id="chartAreaDocs"></canvas>
+                            </div>
+                        </div>
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
+                            <h4 class="font-bold text-slate-800 text-sm mb-4">Status Kelengkapan Dokumen</h4>
+                            <div class="h-64 flex items-center justify-center">
+                                <canvas id="chartStatusPie"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 2. DATA DOKUMEN VIEW -->
+                <section id="documentsView" class="view-section space-y-6 hidden">
+                    
+                    <!-- Top Action Bar -->
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1 max-w-2xl">
+                            <!-- Search Field -->
+                            <div class="relative flex-1">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                                    <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                                </span>
+                                <input type="text" id="docSearchInput" oninput="renderDocumentsTable()" placeholder="Cari nama dokumen atau PIC..." 
+                                    class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            </div>
+                            
+                            <!-- Area Filter Dropdown -->
+                            <select id="docAreaFilter" onchange="renderDocumentsTable()" class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <option value="ALL">Semua Area MCSP</option>
+                                <!-- Dynamic Options -->
+                            </select>
+
+                            <!-- Year Filter -->
+                            <select id="docYearFilter" onchange="renderDocumentsTable()" class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <option value="ALL">Semua Tahun</option>
+                                <option value="2025">2025</option>
+                                <option value="2026">2026</option>
+                                <option value="2027">2027</option>
+                            </select>
+                        </div>
+
+                        <!-- Add Doc Button -->
+                        <button onclick="openDocumentModal()" class="py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-xs shadow-md shadow-indigo-600/20 transition flex items-center justify-center gap-2 whitespace-nowrap">
+                            <i class="fa-solid fa-plus text-xs"></i>
+                            <span>Tambah Dokumen</span>
+                        </button>
+                    </div>
+
+                    <!-- Documents Table Container -->
+                    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+                        <div class="overflow-x-auto custom-scrollbar">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-50/80 border-b border-slate-200/80 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                                        <th class="py-3.5 px-4">Nama Dokumen</th>
+                                        <th class="py-3.5 px-4">Area MCSP</th>
+                                        <th class="py-3.5 px-4">Tahun</th>
+                                        <th class="py-3.5 px-4">Tanggal Upload</th>
+                                        <th class="py-3.5 px-4">PIC</th>
+                                        <th class="py-3.5 px-4 admin-only-cell">Status Kelengkapan</th>
+                                        <th class="py-3.5 px-4 admin-only-cell">Link Google Drive</th>
+                                        <th class="py-3.5 px-4 text-center">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="documentTableBody" class="divide-y divide-slate-100 text-xs">
+                                    <!-- Dynamic Rows -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div id="emptyDocumentState" class="p-8 text-center hidden">
+                            <i class="fa-solid fa-folder-open text-3xl text-slate-300 mb-2"></i>
+                            <p class="text-sm font-semibold text-slate-600">Tidak ada data dokumen ditemukan</p>
+                            <p class="text-xs text-slate-400 mt-1">Coba sesuaikan kata kunci pencarian atau filter area</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 3. LAPORAN VIEW -->
+                <section id="reportsView" class="view-section space-y-6 hidden">
+                    
+                    <!-- Report Header Actions -->
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-sm">Laporan Capaian MCSP</h4>
+                            <p class="text-xs text-slate-500">Melihat perbandingan data terinput vs target tahunan</p>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-3">
+                            <select id="reportAreaFilter" onchange="renderReportContent()" class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <option value="ALL">Semua Area MCSP</option>
+                                <!-- Dynamic Options -->
+                            </select>
+
+                            <select id="reportYearFilter" onchange="renderReportContent()" class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <option value="2025">Tahun 2025</option>
+                                <option value="2026">Tahun 2026</option>
+                                <option value="2027">Tahun 2027</option>
+                            </select>
+
+                            <button id="adminEditTargetBtn" onclick="openTargetModal()" class="admin-only py-2 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl text-xs transition flex items-center gap-1.5">
+                                <i class="fa-solid fa-pen-to-square text-xs"></i>
+                                <span>Edit Target</span>
+                            </button>
+
+                            <button onclick="openPrintModal()" class="py-2 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl text-xs shadow-md shadow-emerald-600/20 transition flex items-center gap-1.5">
+                                <i class="fa-solid fa-download text-xs"></i>
+                                <span>Cetak / Download Laporan</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Report Grid Progress Cards -->
+                    <div id="reportProgressCards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <!-- Dynamic Progress Cards -->
+                    </div>
+
+                    <!-- Report Detailed Chart -->
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
+                        <h4 class="font-bold text-slate-800 text-sm mb-4">Grafik Perbandingan Terinput vs Target</h4>
+                        <div class="h-72">
+                            <canvas id="chartReportComparison"></canvas>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 4. PENGGUNA VIEW (ADMIN ONLY) -->
+                <section id="usersView" class="view-section space-y-6 hidden">
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-sm">Manajemen Pengguna Sistem</h4>
+                            <p class="text-xs text-slate-500">Kelola hak akses dan area penugasan user Inspektorat</p>
+                        </div>
+                        <button onclick="openUserModal()" class="py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-xs shadow-md shadow-indigo-600/20 transition flex items-center gap-2">
+                            <i class="fa-solid fa-user-plus text-xs"></i>
+                            <span>Tambah Pengguna</span>
+                        </button>
+                    </div>
+
+                    <!-- Users Table -->
+                    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+                        <div class="overflow-x-auto custom-scrollbar">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-50/80 border-b border-slate-200/80 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                                        <th class="py-3.5 px-4">Nama User</th>
+                                        <th class="py-3.5 px-4">Username</th>
+                                        <th class="py-3.5 px-4">Kata Sandi</th>
+                                        <th class="py-3.5 px-4">Peran (Role)</th>
+                                        <th class="py-3.5 px-4">Akses Area MCSP</th>
+                                        <th class="py-3.5 px-4 text-center">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="usersTableBody" class="divide-y divide-slate-100 text-xs">
+                                    <!-- Dynamic User Rows -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 5. RIWAYAT AKTIVITAS VIEW (ADMIN ONLY) -->
+                <section id="activityView" class="view-section space-y-6 hidden">
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-sm">Riwayat Aktivitas Pengguna</h4>
+                            <p class="text-xs text-slate-500">Log pencatatan aktivitas entry, edit, dan hapus data</p>
+                        </div>
+                        <button onclick="clearActivityLogs()" class="py-2 px-3 bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-600 font-medium rounded-xl text-xs transition">
+                            <i class="fa-solid fa-trash-can mr-1"></i> Bersihkan Log
+                        </button>
+                    </div>
+
+                    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5">
+                        <div id="activityTimeline" class="space-y-4">
+                            <!-- Dynamic Timeline Items -->
+                        </div>
+                    </div>
+                </section>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- MODAL: ADD / EDIT DOCUMENT -->
+    <div id="documentModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm hidden overflow-y-auto">
+        <div class="bg-white rounded-2xl shadow-xl border border-slate-100 max-w-lg w-full p-6 my-8 relative">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
+                <h3 id="docModalTitle" class="font-bold text-slate-800 text-base">Tambah Dokumen Baru</h3>
+                <button onclick="closeDocumentModal()" class="text-slate-400 hover:text-slate-600 p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <form id="documentForm" onsubmit="saveDocument(event)" class="space-y-4">
+                <input type="hidden" id="docId">
+
+                <!-- Area MCSP Select -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Area MCSP <span class="text-rose-500">*</span></label>
+                    <select id="docArea" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <!-- Dynamic Area Options -->
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <!-- Upload Date -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Tanggal Upload</label>
+                        <input type="date" id="docUploadDate" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+
+                    <!-- Year Select -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Tahun <span class="text-rose-500">*</span></label>
+                        <select id="docYear" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="2025">2025</option>
+                            <option value="2026">2026</option>
+                            <option value="2027">2027</option>
+                            <option value="2028">2028</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Document Name -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Dokumen <span class="text-rose-500">*</span></label>
+                    <input type="text" id="docName" required placeholder="Contoh: SK Tim Perencanaan Tahun 2025" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+
+                <!-- PIC Field (Auto-filled) -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">PIC (Penanggung Jawab)</label>
+                    <input type="text" id="docPic" readonly class="w-full bg-slate-200/60 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-600 cursor-not-allowed">
+                </div>
+
+                <!-- Upload File Simulator -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Unggah File Dokumen</label>
+                    <div class="border-2 border-dashed border-slate-200 rounded-xl p-4 text-center bg-slate-50/50 hover:bg-slate-100/50 transition cursor-pointer relative" onclick="document.getElementById('docFile').click()">
+                        <i class="fa-solid fa-cloud-arrow-up text-2xl text-indigo-500 mb-1"></i>
+                        <p class="text-xs font-medium text-slate-700" id="fileUploadLabel">Klik untuk memilih file dokumen</p>
+                        <p class="text-[10px] text-slate-400 mt-0.5">PDF, DOCX, XLSX (Maks. 10MB)</p>
+                        <input type="file" id="docFile" onchange="handleFileSelected(event)" class="hidden">
+                    </div>
+                </div>
+
+                <!-- Keterangan / Notes -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Keterangan Catatan</label>
+                    <textarea id="docNotes" rows="2" placeholder="Catatan tambahan dokumen..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                </div>
+
+                <!-- ADMIN ONLY FIELDS -->
+                <div id="adminDocFields" class="p-3 bg-amber-50/60 border border-amber-200/80 rounded-xl space-y-3">
+                    <p class="text-[10px] font-bold text-amber-800 uppercase tracking-wider flex items-center gap-1">
+                        <i class="fa-solid fa-lock text-xs"></i> Pengaturan Khusus Admin Utama
+                    </p>
+                    
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">ID Dokumen</label>
+                            <input type="text" id="docCustomId" readonly class="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-mono text-slate-600">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Status Kelengkapan</label>
+                            <select id="docCompleteness" class="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-slate-800 focus:outline-none">
+                                <option value="Lengkap">Lengkap</option>
+                                <option value="Belum Lengkap">Belum Lengkap</option>
+                                <option value="Dalam Review">Dalam Review</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Link Penyimpanan Google Drive</label>
+                        <input type="url" id="docDriveUrl" placeholder="https://drive.google.com/drive/folders/..." class="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 focus:outline-none">
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                    <button type="button" onclick="closeDocumentModal()" class="py-2 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl text-xs transition">
+                        Batal
+                    </button>
+                    <button type="submit" class="py-2 px-5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-xs shadow-md shadow-indigo-600/20 transition">
+                        Simpan Dokumen
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: EDIT TARGET (ADMIN ONLY) -->
+    <div id="targetModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm hidden">
+        <div class="bg-white rounded-2xl shadow-xl border border-slate-100 max-w-md w-full p-6 relative">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+                <h3 class="font-bold text-slate-800 text-base">Edit Target Dokumen Area</h3>
+                <button onclick="closeTargetModal()" class="text-slate-400 hover:text-slate-600 p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <form id="targetForm" onsubmit="saveTargetChanges(event)" class="space-y-4">
+                <div id="targetInputsContainer" class="space-y-3 max-h-80 overflow-y-auto custom-scrollbar pr-1">
+                    <!-- Dynamic Target Input Fields -->
+                </div>
+
+                <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                    <button type="button" onclick="closeTargetModal()" class="py-2 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl text-xs transition">
+                        Batal
+                    </button>
+                    <button type="submit" class="py-2 px-5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-xs shadow-md shadow-indigo-600/20 transition">
+                        Simpan Target
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: MANAGE USER (ADMIN ONLY) -->
+    <div id="userModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm hidden overflow-y-auto">
+        <div class="bg-white rounded-2xl shadow-xl border border-slate-100 max-w-md w-full p-6 my-8 relative">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+                <h3 id="userModalTitle" class="font-bold text-slate-800 text-base">Pengaturan Pengguna</h3>
+                <button onclick="closeUserModal()" class="text-slate-400 hover:text-slate-600 p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <form id="userForm" onsubmit="saveUser(event)" class="space-y-4">
+                <input type="hidden" id="userId">
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Lengkap Pengguna <span class="text-rose-500">*</span></label>
+                    <input type="text" id="userFullName" required placeholder="Nama lengkap..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Username <span class="text-rose-500">*</span></label>
+                    <input type="text" id="userUsername" required placeholder="username_unik" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Kata Sandi <span class="text-rose-500">*</span></label>
+                    <div class="relative">
+                        <input type="password" id="userPassword" required placeholder="••••••••" class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-3 pr-10 py-2 text-xs font-medium text-slate-800 focus:outline-none">
+                        <button type="button" onclick="togglePasswordVisibility('userPassword', 'userPassIcon')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600">
+                            <i id="userPassIcon" class="fa-solid fa-eye text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Peran Akses Sistem</label>
+                    <select id="userRole" onchange="toggleAreaCheckboxes()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none">
+                        <option value="user">User Biasa / PIC Area</option>
+                        <option value="admin">Admin Utama (Inspektorat)</option>
+                    </select>
+                </div>
+
+                <div id="areaAccessContainer">
+                    <label class="block text-xs font-semibold text-slate-600 mb-2">Penugasan Akses Area MCSP</label>
+                    <div id="areaCheckboxes" class="space-y-1.5 max-h-40 overflow-y-auto custom-scrollbar p-3 bg-slate-50 rounded-xl border border-slate-200">
+                        <!-- Dynamic Area Checkboxes -->
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                    <button type="button" onclick="closeUserModal()" class="py-2 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl text-xs transition">
+                        Batal
+                    </button>
+                    <button type="submit" class="py-2 px-5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-xs shadow-md shadow-indigo-600/20 transition">
+                        Simpan Pengguna
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: PRINT / DOWNLOAD REPORT PREVIEW (ONLY TABLES AND CHARTS) -->
+    <div id="printModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm hidden overflow-y-auto">
+        <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-4xl w-full p-6 my-8 relative flex flex-col max-h-[90vh]">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3 no-print">
+                <h3 class="font-bold text-slate-800 text-base">Pratinjau Laporan Cetak (Bebas Navigasi)</h3>
+                <div class="flex items-center gap-2">
+                    <button onclick="window.print()" class="py-1.5 px-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg text-xs transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-print"></i>
+                        <span>Cetak Laporan</span>
+                    </button>
+                    <button onclick="closePrintModal()" class="text-slate-400 hover:text-slate-600 p-1">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- PRINTABLE CONTENT CONTAINER -->
+            <div id="printArea" class="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6 bg-white">
+                <div class="text-center border-b pb-4">
+                    <h2 class="text-xl font-bold text-slate-900">LAPORAN CAPAIAN DOKUMEN ARSIP MCSP</h2>
+                    <p class="text-xs text-slate-600 font-medium mt-0.5">INSPEKTORAT DAERAH - SISTEM DiMAS</p>
+                    <p class="text-[11px] text-slate-400 mt-1" id="printReportMetaDate">Dicetak pada: -</p>
+                </div>
+
+                <!-- Printable Progress Summary Table -->
+                <div>
+                    <h4 class="text-xs font-bold uppercase text-slate-700 mb-2">1. Ringkasan Capaian Per Area MCSP</h4>
+                    <table class="w-full text-left border-collapse border border-slate-300 text-xs">
+                        <thead>
+                            <tr class="bg-slate-100 border-b border-slate-300 font-bold text-slate-800">
+                                <th class="border border-slate-300 p-2">No</th>
+                                <th class="border border-slate-300 p-2">Area MCSP</th>
+                                <th class="border border-slate-300 p-2 text-center">Jumlah Input</th>
+                                <th class="border border-slate-300 p-2 text-center">Target</th>
+                                <th class="border border-slate-300 p-2 text-center">Persentase</th>
+                            </tr>
+                        </thead>
+                        <tbody id="printReportSummaryBody">
+                            <!-- Dynamic Print Rows -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Printable Detailed Documents List Table -->
+                <div>
+                    <h4 class="text-xs font-bold uppercase text-slate-700 mb-2">2. Daftar Rincian Dokumen Terinput</h4>
+                    <table class="w-full text-left border-collapse border border-slate-300 text-xs">
+                        <thead>
+                            <tr class="bg-slate-100 border-b border-slate-300 font-bold text-slate-800">
+                                <th class="border border-slate-300 p-2">No</th>
+                                <th class="border border-slate-300 p-2">Nama Dokumen</th>
+                                <th class="border border-slate-300 p-2">Area MCSP</th>
+                                <th class="border border-slate-300 p-2">Tahun</th>
+                                <th class="border border-slate-300 p-2">Tgl Upload</th>
+                                <th class="border border-slate-300 p-2">PIC</th>
+                            </tr>
+                        </thead>
+                        <tbody id="printReportDocsBody">
+                            <!-- Dynamic Print Doc Rows -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        /*
+         * DiMAS (Digitalisasi MCSP Arsip Sistem) Logic
+         */
+
+        // 8 Mandatory MCSP Areas
+        const MCSP_AREAS = [
+            "Perencanaan",
+            "Anggaran",
+            "Pengadaan Barang Jasa",
+            "Pelayanan Publik",
+            "Manajemen ASN",
+            "Barang Milik Daerah",
+            "Optimalisasi Penerimaan Daerah",
+            "Penguatan APIP"
+        ];
+
+        // Initial Seeded Users
+        const DEFAULT_USERS = [
+            {
+                id: "usr-1",
+                name: "Inspektorat Utama (Admin)",
+                username: "inspektorat_admin",
+                password: "admin123",
+                role: "admin",
+                allowedAreas: [...MCSP_AREAS]
+            },
+            {
+                id: "usr-2",
+                name: "Budi Santoso (PIC Perencanaan)",
+                username: "pic_perencanaan",
+                password: "user123",
+                role: "user",
+                allowedAreas: ["Perencanaan"]
+            },
+            {
+                id: "usr-3",
+                name: "Siti Rahma (PIC Anggaran)",
+                username: "pic_anggaran",
+                password: "user123",
+                role: "user",
+                allowedAreas: ["Anggaran", "Perencanaan"]
+            }
+        ];
+
+        // Default Targets per Area (Admin editable)
+        const DEFAULT_TARGETS = {
+            "Perencanaan": 10,
+            "Anggaran": 12,
+            "Pengadaan Barang Jasa": 15,
+            "Pelayanan Publik": 8,
+            "Manajemen ASN": 10,
+            "Barang Milik Daerah": 12,
+            "Optimalisasi Penerimaan Daerah": 10,
+            "Penguatan APIP": 14
+        };
+
+        // Seeded Initial Documents
+        const DEFAULT_DOCUMENTS = [
+            {
+                id: "DOC-2025-001",
+                name: "Dokumen Renstra Inspektorat 2025-2029",
+                area: "Perencanaan",
+                year: "2025",
+                uploadDate: "2025-01-15",
+                pic: "Budi Santoso (PIC Perencanaan)",
+                completeness: "Lengkap",
+                driveUrl: "https://drive.google.com/drive/folders/dimas-perencanaan",
+                notes: "Telah disahkan oleh Kepala Inspektorat",
+                fileName: "Renstra_2025.pdf"
+            },
+            {
+                id: "DOC-2025-002",
+                name: "Rencana Kerja Anggaran (RKA) 2025",
+                area: "Anggaran",
+                year: "2025",
+                uploadDate: "2025-02-10",
+                pic: "Siti Rahma (PIC Anggaran)",
+                completeness: "Lengkap",
+                driveUrl: "https://drive.google.com/drive/folders/dimas-anggaran",
+                notes: "DPA telah diverifikasi",
+                fileName: "RKA_2025_Final.pdf"
+            },
+            {
+                id: "DOC-2025-003",
+                name: "Laporan Pengadaan Barang & Jasa Triwulan 1",
+                area: "Pengadaan Barang Jasa",
+                year: "2025",
+                uploadDate: "2025-04-05",
+                pic: "Inspektorat Utama (Admin)",
+                completeness: "Dalam Review",
+                driveUrl: "https://drive.google.com/drive/folders/dimas-pbj",
+                notes: "Menunggu tanda tangan PPK",
+                fileName: "PBJ_Q1_2025.pdf"
+            },
+            {
+                id: "DOC-2025-004",
+                name: "Standar Pelayanan Publik Inspektorat",
+                area: "Pelayanan Publik",
+                year: "2025",
+                uploadDate: "2025-05-12",
+                pic: "Inspektorat Utama (Admin)",
+                completeness: "Lengkap",
+                driveUrl: "https://drive.google.com/drive/folders/dimas-pelayanan",
+                notes: "Sudah dipublikasi di portal utama",
+                fileName: "SPP_2025.pdf"
+            }
+        ];
+
+        // Application State Management
+        let appState = {
+            currentUser: null,
+            users: JSON.parse(localStorage.getItem('dimas_users')) || DEFAULT_USERS,
+            documents: JSON.parse(localStorage.getItem('dimas_documents')) || DEFAULT_DOCUMENTS,
+            targets: JSON.parse(localStorage.getItem('dimas_targets')) || DEFAULT_TARGETS,
+            activityLogs: JSON.parse(localStorage.getItem('dimas_activities')) || [
+                { id: 1, user: "Inspektorat Utama (Admin)", action: "Inisialisasi Sistem DiMAS", time: new Date().toLocaleString('id-ID') }
+            ],
+            selectedFileTemp: null
+        };
+
+        // Chart References
+        let chartAreaDocsInstance = null;
+        let chartStatusPieInstance = null;
+        let chartReportCompInstance = null;
+
+        // Initialize App on DOM Loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            populateAreaDropdowns();
+            checkSavedSession();
+        });
+
+        // Helper: Save state to localStorage
+        function saveState() {
+            localStorage.setItem('dimas_users', JSON.stringify(appState.users));
+            localStorage.setItem('dimas_documents', JSON.stringify(appState.documents));
+            localStorage.setItem('dimas_targets', JSON.stringify(appState.targets));
+            localStorage.setItem('dimas_activities', JSON.stringify(appState.activityLogs));
+        }
+
+        // Helper: Log user activity
+        function logActivity(actionText) {
+            const newLog = {
+                id: Date.now(),
+                user: appState.currentUser ? appState.currentUser.name : "System",
+                action: actionText,
+                time: new Date().toLocaleString('id-ID')
+            };
+            appState.activityLogs.unshift(newLog);
+            saveState();
+        }
+
+        // Helper: Populate Area Select Dropdowns
+        function populateAreaDropdowns() {
+            const optionsHtml = MCSP_AREAS.map(area => `<option value="${area}">${area}</option>`).join('');
+            
+            document.getElementById('dashAreaFilter').innerHTML = `<option value="ALL">Semua Area Terdaftar</option>` + optionsHtml;
+            document.getElementById('docAreaFilter').innerHTML = `<option value="ALL">Semua Area MCSP</option>` + optionsHtml;
+            document.getElementById('reportAreaFilter').innerHTML = `<option value="ALL">Semua Area MCSP</option>` + optionsHtml;
+            document.getElementById('docArea').innerHTML = optionsHtml;
+        }
+
+        // Quick Demo Login helper
+        function quickLogin(username, password) {
+            document.getElementById('loginUsername').value = username;
+            document.getElementById('loginPassword').value = password;
+            handleLogin(new Event('submit'));
+        }
+
+        // Handle Login Submission
+        function handleLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value;
+
+            const user = appState.users.find(u => u.username === username && u.password === password);
+
+            if (user) {
+                appState.currentUser = user;
+                localStorage.setItem('dimas_current_user', JSON.stringify(user));
+                
+                logActivity(`User masuk ke sistem`);
+                showToast(`Selamat datang, ${user.name}`, 'success');
+
+                document.getElementById('loginView').classList.add('hidden');
+                document.getElementById('appLayout').classList.remove('hidden');
+
+                applyRolePermissionsUI();
+                switchView('dashboard');
+            } else {
+                showToast('Username atau Kata Sandi salah!', 'error');
+            }
+        }
+
+        // Session recovery
+        function checkSavedSession() {
+            const savedUser = localStorage.getItem('dimas_current_user');
+            if (savedUser) {
+                appState.currentUser = JSON.parse(savedUser);
+                document.getElementById('loginView').classList.add('hidden');
+                document.getElementById('appLayout').classList.remove('hidden');
+                applyRolePermissionsUI();
+                switchView('dashboard');
+            }
+        }
+
+        // Logout
+        function handleLogout() {
+            if (appState.currentUser) {
+                logActivity(`User keluar dari sistem`);
+            }
+            appState.currentUser = null;
+            localStorage.removeItem('dimas_current_user');
+            document.getElementById('appLayout').classList.add('hidden');
+            document.getElementById('loginView').classList.remove('hidden');
+            showToast('Anda telah keluar dari sistem', 'info');
+        }
+
+        // Apply Role-based visibility and access restrictions
+        function applyRolePermissionsUI() {
+            const user = appState.currentUser;
+            if (!user) return;
+
+            const isAdmin = user.role === 'admin';
+
+            // Topbar & Sidebar profile display
+            document.getElementById('userNameDisplay').textContent = user.name;
+            document.getElementById('userRoleBadge').textContent = isAdmin ? "Admin Utama (Inspektorat)" : "User PIC Area";
+            document.getElementById('userAvatar').textContent = user.name.charAt(0).toUpperCase();
+            document.getElementById('headerRoleLabel').textContent = isAdmin ? "Admin Utama" : "User " + (user.allowedAreas[0] || "");
+
+            // Hide/Show Admin-Only Menu Items
+            const adminSection = document.getElementById('adminMenuSection');
+            const adminDriveBtn = document.getElementById('driveMainFolderBtn');
+            const adminTargetBtn = document.getElementById('adminEditTargetBtn');
+
+            if (isAdmin) {
+                adminSection.classList.remove('hidden');
+                adminDriveBtn.classList.remove('hidden');
+                if(adminTargetBtn) adminTargetBtn.classList.remove('hidden');
+            } else {
+                adminSection.classList.add('hidden');
+                adminDriveBtn.classList.add('hidden');
+                if(adminTargetBtn) adminTargetBtn.classList.add('hidden');
+            }
+
+            // Filter Area Options based on user assignment
+            filterAreaDropdownsForUser();
+        }
+
+        // Restrict dropdown choices for regular user to assigned areas
+        function filterAreaDropdownsForUser() {
+            const user = appState.currentUser;
+            if (!user) return;
+
+            const isUserAdmin = user.role === 'admin';
+            const allowed = user.allowedAreas || [];
+
+            const updateOptions = (selectId, includeAllOption = true) => {
+                const select = document.getElementById(selectId);
+                if (!select) return;
+
+                let html = includeAllOption ? `<option value="ALL">Semua Area Terdaftar</option>` : '';
+                MCSP_AREAS.forEach(area => {
+                    if (isUserAdmin || allowed.includes(area)) {
+                        html += `<option value="${area}">${area}</option>`;
+                    }
+                });
+                select.innerHTML = html;
+            };
+
+            updateOptions('dashAreaFilter', true);
+            updateOptions('docAreaFilter', true);
+            updateOptions('reportAreaFilter', true);
+            updateOptions('docArea', false);
+        }
+
+        // Navigation view switcher
+        function switchView(viewName) {
+            const isAdmin = appState.currentUser?.role === 'admin';
+
+            // Security check: restrict regular user from accessing admin-only views
+            if (!isAdmin && (viewName === 'users' || viewName === 'activity')) {
+                showToast('Akses ditolak! Fitur hanya untuk Admin Utama.', 'error');
+                return;
+            }
+
+            // Hide all sections
+            document.querySelectorAll('.view-section').forEach(sec => sec.classList.add('hidden'));
+
+            // Deactivate nav items
+            document.querySelectorAll('.nav-item').forEach(btn => {
+                btn.classList.remove('bg-indigo-50', 'text-indigo-600', 'font-bold');
+                btn.classList.add('text-slate-600');
+            });
+
+            // Show target section & highlight button
+            const targetSection = document.getElementById(viewName + 'View');
+            const targetNav = document.getElementById('nav-' + viewName);
+
+            if (targetSection) targetSection.classList.remove('hidden');
+            if (targetNav) {
+                targetNav.classList.add('bg-indigo-50', 'text-indigo-600', 'font-bold');
+                targetNav.classList.remove('text-slate-600');
+            }
+
+            // Update Header Title
+            const titles = {
+                dashboard: "Dashboard Sistem",
+                documents: "Data Dokumen Arsip MCSP",
+                reports: "Laporan Capaian Target",
+                users: "Manajemen Pengguna",
+                activity: "Riwayat Aktivitas System"
+            };
+            document.getElementById('currentViewTitle').textContent = titles[viewName] || "DiMAS";
+
+            // Mobile sidebar hide on view click
+            if (window.innerWidth < 768) {
+                document.getElementById('sidebar').classList.add('-translate-x-full');
+                document.getElementById('sidebarBackdrop').classList.add('hidden');
+            }
+
+            // Trigger view-specific render logic
+            if (viewName === 'dashboard') updateDashboardStats();
+            if (viewName === 'documents') renderDocumentsTable();
+            if (viewName === 'reports') renderReportContent();
+            if (viewName === 'users') renderUsersTable();
+            if (viewName === 'activity') renderActivityLogs();
+        }
+
+        // Toggle mobile sidebar
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const backdrop = document.getElementById('sidebarBackdrop');
+            sidebar.classList.toggle('-translate-x-full');
+            backdrop.classList.toggle('hidden');
+        }
+
+        // Dashboard Stats & Chart Renderer
+        function updateDashboardStats() {
+            const user = appState.currentUser;
+            const selectedYear = document.getElementById('dashYearFilter').value;
+            const selectedArea = document.getElementById('dashAreaFilter').value;
+
+            // Filter documents based on user role permissions & filters
+            let filteredDocs = appState.documents.filter(doc => {
+                const yearMatch = doc.year === selectedYear;
+                const areaMatch = selectedArea === 'ALL' ? true : doc.area === selectedArea;
+                const userAreaPerm = user.role === 'admin' ? true : user.allowedAreas.includes(doc.area);
+                return yearMatch && areaMatch && userAreaPerm;
+            });
+
+            const total = filteredDocs.length;
+            const complete = filteredDocs.filter(d => d.completeness === 'Lengkap').length;
+            const completePercentage = total > 0 ? Math.round((complete / total) * 100) : 0;
+
+            // Target calculation
+            let totalTarget = 0;
+            if (selectedArea === 'ALL') {
+                MCSP_AREAS.forEach(area => {
+                    if (user.role === 'admin' || user.allowedAreas.includes(area)) {
+                        totalTarget += appState.targets[area] || 10;
+                    }
+                });
+            } else {
+                totalTarget = appState.targets[selectedArea] || 10;
+            }
+
+            const targetRatioPercent = totalTarget > 0 ? Math.min(Math.round((total / totalTarget) * 100), 100) : 0;
+
+            // Update KPI DOM
+            document.getElementById('statTotalDocs').textContent = total;
+            document.getElementById('statCompleteDocs').textContent = complete;
+            document.getElementById('statCompletePercentage').textContent = `${completePercentage}% Terverifikasi`;
+            document.getElementById('statTargetPercent').textContent = `${targetRatioPercent}%`;
+            document.getElementById('statTargetRatio').textContent = `${total} dari ${totalTarget} Target`;
+            document.getElementById('statActiveAreas').textContent = user.role === 'admin' ? MCSP_AREAS.length : user.allowedAreas.length;
+
+            renderDashboardCharts(filteredDocs, selectedYear);
+        }
+
+        function renderDashboardCharts(filteredDocs, year) {
+            const user = appState.currentUser;
+            const visibleAreas = MCSP_AREAS.filter(area => user.role === 'admin' || user.allowedAreas.includes(area));
+
+            // Area Count Dataset
+            const areaCounts = visibleAreas.map(area => {
+                return filteredDocs.filter(d => d.area === area).length;
+            });
+
+            // 1. Bar Chart: Docs per Area
+            const ctxArea = document.getElementById('chartAreaDocs').getContext('2d');
+            if (chartAreaDocsInstance) chartAreaDocsInstance.destroy();
+
+            chartAreaDocsInstance = new Chart(ctxArea, {
+                type: 'bar',
+                data: {
+                    labels: visibleAreas.map(a => a.length > 15 ? a.substring(0, 15) + '...' : a),
+                    datasets: [{
+                        label: `Jumlah Dokumen (${year})`,
+                        data: areaCounts,
+                        backgroundColor: '#6366f1',
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { precision: 0 } }
+                    }
+                }
+            });
+
+            // 2. Pie Chart: Document Completeness Status
+            const statusCounts = {
+                'Lengkap': filteredDocs.filter(d => d.completeness === 'Lengkap').length,
+                'Belum Lengkap': filteredDocs.filter(d => d.completeness === 'Belum Lengkap').length,
+                'Dalam Review': filteredDocs.filter(d => d.completeness === 'Dalam Review').length
+            };
+
+            const ctxStatus = document.getElementById('chartStatusPie').getContext('2d');
+            if (chartStatusPieInstance) chartStatusPieInstance.destroy();
+
+            chartStatusPieInstance = new Chart(ctxStatus, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Lengkap', 'Belum Lengkap', 'Dalam Review'],
+                    datasets: [{
+                        data: [statusCounts['Lengkap'], statusCounts['Belum Lengkap'], statusCounts['Dalam Review']],
+                        backgroundColor: ['#10b981', '#f43f5e', '#f59e0b']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+        }
+
+        // Render Data Dokumen Table
+        function renderDocumentsTable() {
+            const user = appState.currentUser;
+            const search = document.getElementById('docSearchInput').value.toLowerCase();
+            const areaFilter = document.getElementById('docAreaFilter').value;
+            const yearFilter = document.getElementById('docYearFilter').value;
+
+            const isAdmin = user.role === 'admin';
+
+            // Toggle admin-only table header columns visibility
+            document.querySelectorAll('.admin-only-cell').forEach(el => {
+                if (isAdmin) el.classList.remove('hidden');
+                else el.classList.add('hidden');
+            });
+
+            const tbody = document.getElementById('documentTableBody');
+            tbody.innerHTML = '';
+
+            let docs = appState.documents.filter(doc => {
+                // Filter by assigned user area permissions
+                const permMatch = isAdmin ? true : user.allowedAreas.includes(doc.area);
+                const areaMatch = areaFilter === 'ALL' ? true : doc.area === areaFilter;
+                const yearMatch = yearFilter === 'ALL' ? true : doc.year === yearFilter;
+                const searchMatch = doc.name.toLowerCase().includes(search) || doc.pic.toLowerCase().includes(search);
+                return permMatch && areaMatch && yearMatch && searchMatch;
+            });
+
+            if (docs.length === 0) {
+                document.getElementById('emptyDocumentState').classList.remove('hidden');
+                return;
+            } else {
+                document.getElementById('emptyDocumentState').classList.add('hidden');
+            }
+
+            docs.forEach((doc, idx) => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50/80 transition duration-150 border-b border-slate-100";
+
+                // Status badge formatting
+                let statusBadge = '';
+                if (doc.completeness === 'Lengkap') {
+                    statusBadge = `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700"><i class="fa-solid fa-check text-[9px]"></i> Lengkap</span>`;
+                } else if (doc.completeness === 'Dalam Review') {
+                    statusBadge = `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700"><i class="fa-solid fa-clock text-[9px]"></i> Review</span>`;
+                } else {
+                    statusBadge = `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700"><i class="fa-solid fa-xmark text-[9px]"></i> Belum Lengkap</span>`;
+                }
+
+                // Drive link column (Admin only)
+                let driveCol = '';
+                if (isAdmin) {
+                    driveCol = `<td class="py-3 px-4">
+                        <a href="${doc.driveUrl || 'https://drive.google.com'}" target="_blank" class="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 font-medium hover:underline text-xs">
+                            <i class="fa-brands fa-google-drive"></i> Folder Drive
+                        </a>
+                    </td>`;
+                }
+
+                tr.innerHTML = `
+                    <td class="py-3 px-4">
+                        <p class="font-bold text-slate-800">${doc.name}</p>
+                        <p class="text-[10px] text-slate-400">${doc.fileName || 'Dokumen.pdf'}</p>
+                    </td>
+                    <td class="py-3 px-4">
+                        <span class="inline-block px-2 py-0.5 bg-slate-100 text-slate-700 rounded-md text-[10px] font-semibold">${doc.area}</span>
+                    </td>
+                    <td class="py-3 px-4 font-semibold text-slate-600">${doc.year}</td>
+                    <td class="py-3 px-4 text-slate-500">${doc.uploadDate}</td>
+                    <td class="py-3 px-4 font-medium text-slate-700">${doc.pic}</td>
+                    ${isAdmin ? `<td class="py-3 px-4">${statusBadge}</td>` : ''}
+                    ${driveCol}
+                    <td class="py-3 px-4 text-center">
+                        <div class="flex items-center justify-center gap-1">
+                            <button onclick="editDocument('${doc.id}')" title="Edit Dokumen" class="p-1.5 text-slate-400 hover:text-indigo-600 rounded-lg hover:bg-indigo-50 transition">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </button>
+                            <button onclick="deleteDocument('${doc.id}')" title="Hapus Dokumen" class="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Document Modal Handlers
+        function openDocumentModal(docId = null) {
+            const user = appState.currentUser;
+            const isAdmin = user.role === 'admin';
+
+            document.getElementById('documentForm').reset();
+            document.getElementById('fileUploadLabel').textContent = "Klik untuk memilih file dokumen";
+            appState.selectedFileTemp = null;
+
+            // Auto fill current date
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('docUploadDate').value = today;
+
+            // Auto set PIC
+            document.getElementById('docPic').value = user.name;
+
+            // Show/Hide Admin specific fields
+            const adminFields = document.getElementById('adminDocFields');
+            if (isAdmin) {
+                adminFields.classList.remove('hidden');
+            } else {
+                adminFields.classList.add('hidden');
+            }
+
+            if (docId) {
+                // Edit mode
+                const doc = appState.documents.find(d => d.id === docId);
+                if (doc) {
+                    document.getElementById('docModalTitle').textContent = "Edit Detail Dokumen";
+                    document.getElementById('docId').value = doc.id;
+                    document.getElementById('docArea').value = doc.area;
+                    document.getElementById('docUploadDate').value = doc.uploadDate;
+                    document.getElementById('docYear').value = doc.year;
+                    document.getElementById('docName').value = doc.name;
+                    document.getElementById('docPic').value = doc.pic;
+                    document.getElementById('docNotes').value = doc.notes || '';
+                    document.getElementById('fileUploadLabel').textContent = doc.fileName ? `File terlampir: ${doc.fileName}` : "Klik untuk mengubah file";
+
+                    if (isAdmin) {
+                        document.getElementById('docCustomId').value = doc.id;
+                        document.getElementById('docCompleteness').value = doc.completeness || 'Belum Lengkap';
+                        document.getElementById('docDriveUrl').value = doc.driveUrl || '';
+                    }
+                }
+            } else {
+                // Create mode
+                document.getElementById('docModalTitle').textContent = "Tambah Dokumen MCSP Baru";
+                document.getElementById('docId').value = '';
+                const newGeneratedId = `DOC-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+                if (isAdmin) {
+                    document.getElementById('docCustomId').value = newGeneratedId;
+                    document.getElementById('docDriveUrl').value = `https://drive.google.com/drive/folders/dimas-${document.getElementById('docArea').value.toLowerCase().replace(/\s+/g, '-')}`;
+                }
+            }
+
+            document.getElementById('documentModal').classList.remove('hidden');
+        }
+
+        function closeDocumentModal() {
+            document.getElementById('documentModal').classList.add('hidden');
+        }
+
+        function handleFileSelected(e) {
+            const file = e.target.files[0];
+            if (file) {
+                appState.selectedFileTemp = file.name;
+                document.getElementById('fileUploadLabel').textContent = `Terpilih: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+            }
+        }
+
+        function saveDocument(e) {
+            e.preventDefault();
+            const user = appState.currentUser;
+            const isAdmin = user.role === 'admin';
+
+            const id = document.getElementById('docId').value;
+            const area = document.getElementById('docArea').value;
+            const uploadDate = document.getElementById('docUploadDate').value;
+            const year = document.getElementById('docYear').value;
+            const name = document.getElementById('docName').value.trim();
+            const pic = document.getElementById('docPic').value;
+            const notes = document.getElementById('docNotes').value.trim();
+
+            let completeness = "Belum Lengkap";
+            let driveUrl = `https://drive.google.com/drive/folders/dimas-${area.toLowerCase().replace(/\s+/g, '-')}`;
+
+            if (isAdmin) {
+                completeness = document.getElementById('docCompleteness').value;
+                driveUrl = document.getElementById('docDriveUrl').value.trim() || driveUrl;
+            }
+
+            const fileName = appState.selectedFileTemp || (id ? appState.documents.find(d => d.id === id)?.fileName : `${name.replace(/\s+/g, '_')}.pdf`);
+
+            if (id) {
+                // Edit existing doc
+                const index = appState.documents.findIndex(d => d.id === id);
+                if (index !== -1) {
+                    appState.documents[index] = {
+                        ...appState.documents[index],
+                        area, uploadDate, year, name, notes, fileName,
+                        ...(isAdmin ? { completeness, driveUrl } : {})
+                    };
+                    logActivity(`Memperbarui dokumen: ${name}`);
+                    showToast('Dokumen berhasil diperbarui', 'success');
+                }
+            } else {
+                // Add new doc
+                const newDoc = {
+                    id: isAdmin ? document.getElementById('docCustomId').value : `DOC-${year}-${Math.floor(1000 + Math.random() * 9000)}`,
+                    name, area, year, uploadDate, pic,
+                    completeness, driveUrl, notes, fileName
+                };
+                appState.documents.unshift(newDoc);
+                logActivity(`Menambahkan dokumen baru: ${name} (${area})`);
+                showToast('Dokumen baru berhasil ditambahkan', 'success');
+            }
+
+            saveState();
+            closeDocumentModal();
+            renderDocumentsTable();
+            updateDashboardStats();
+        }
+
+        function editDocument(id) {
+            openDocumentModal(id);
+        }
+
+        function deleteDocument(id) {
+            const doc = appState.documents.find(d => d.id === id);
+            if (!doc) return;
+
+            // Custom UI Modal Confirmation logic
+            if (confirm(`Apakah Anda yakin ingin menghapus dokumen "${doc.name}"?`)) {
+                appState.documents = appState.documents.filter(d => d.id !== id);
+                saveState();
+                logActivity(`Menghapus dokumen: ${doc.name}`);
+                showToast('Dokumen telah dihapus', 'info');
+                renderDocumentsTable();
+                updateDashboardStats();
+            }
+        }
+
+        // Laporan View Logic
+        function renderReportContent() {
+            const user = appState.currentUser;
+            const selectedArea = document.getElementById('reportAreaFilter').value;
+            const selectedYear = document.getElementById('reportYearFilter').value;
+
+            const isUserRegular = user.role !== 'admin';
+
+            // Regular user filter restriction: Only see their own uploaded documents
+            let userDocs = appState.documents.filter(doc => {
+                const yearMatch = doc.year === selectedYear;
+                const areaMatch = selectedArea === 'ALL' ? true : doc.area === selectedArea;
+                const picMatch = isUserRegular ? doc.pic === user.name : true;
+                const areaPerm = isUserRegular ? user.allowedAreas.includes(doc.area) : true;
+                return yearMatch && areaMatch && picMatch && areaPerm;
+            });
+
+            // Calculate progress per visible area
+            const progressContainer = document.getElementById('reportProgressCards');
+            progressContainer.innerHTML = '';
+
+            const visibleAreas = MCSP_AREAS.filter(area => isUserRegular ? user.allowedAreas.includes(area) : true);
+
+            const areaActualCounts = [];
+            const areaTargetCounts = [];
+
+            visibleAreas.forEach(area => {
+                if (selectedArea !== 'ALL' && selectedArea !== area) return;
+
+                const actual = userDocs.filter(d => d.area === area).length;
+                const target = appState.targets[area] || 10;
+                const percent = Math.min(Math.round((actual / target) * 100), 100);
+
+                areaActualCounts.push(actual);
+                areaTargetCounts.push(target);
+
+                const card = document.createElement('div');
+                card.className = "bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm space-y-2";
+                card.innerHTML = `
+                    <div class="flex items-center justify-between text-xs">
+                        <span class="font-bold text-slate-800">${area}</span>
+                        <span class="font-bold text-indigo-600">${percent}%</span>
+                    </div>
+                    <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                        <div class="bg-indigo-600 h-full rounded-full transition-all duration-300" style="width: ${percent}%"></div>
+                    </div>
+                    <p class="text-[11px] text-slate-500">${actual} terinput dari ${target} target</p>
+                `;
+                progressContainer.appendChild(card);
+            });
+
+            // Render Comparison Chart
+            const ctxComp = document.getElementById('chartReportComparison').getContext('2d');
+            if (chartReportCompInstance) chartReportCompInstance.destroy();
+
+            chartReportCompInstance = new Chart(ctxComp, {
+                type: 'bar',
+                data: {
+                    labels: visibleAreas.map(a => a.length > 15 ? a.substring(0, 15) + '...' : a),
+                    datasets: [
+                        {
+                            label: 'Dokumen Terinput',
+                            data: areaActualCounts,
+                            backgroundColor: '#6366f1',
+                            borderRadius: 6
+                        },
+                        {
+                            label: 'Target Tahun',
+                            data: areaTargetCounts,
+                            backgroundColor: '#cbd5e1',
+                            borderRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+                }
+            });
+        }
+
+        // Print/Download Laporan Modal
+        function openPrintModal() {
+            const user = appState.currentUser;
+            const selectedArea = document.getElementById('reportAreaFilter').value;
+            const selectedYear = document.getElementById('reportYearFilter').value;
+
+            document.getElementById('printReportMetaDate').textContent = `Dicetak oleh: ${user.name} | Tanggal: ${new Date().toLocaleDateString('id-ID')}`;
+
+            // 1. Populate Summary Table
+            const summaryBody = document.getElementById('printReportSummaryBody');
+            summaryBody.innerHTML = '';
+
+            const isUserRegular = user.role !== 'admin';
+            const visibleAreas = MCSP_AREAS.filter(area => isUserRegular ? user.allowedAreas.includes(area) : true);
+
+            visibleAreas.forEach((area, index) => {
+                if (selectedArea !== 'ALL' && selectedArea !== area) return;
+
+                const actual = appState.documents.filter(d => d.area === area && d.year === selectedYear && (isUserRegular ? d.pic === user.name : true)).length;
+                const target = appState.targets[area] || 10;
+                const percent = Math.min(Math.round((actual / target) * 100), 100);
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="border border-slate-300 p-2 text-center">${index + 1}</td>
+                    <td class="border border-slate-300 p-2 font-semibold">${area}</td>
+                    <td class="border border-slate-300 p-2 text-center font-bold text-slate-800">${actual}</td>
+                    <td class="border border-slate-300 p-2 text-center">${target}</td>
+                    <td class="border border-slate-300 p-2 text-center font-bold text-indigo-700">${percent}%</td>
+                `;
+                summaryBody.appendChild(tr);
+            });
+
+            // 2. Populate Detailed Docs Table
+            const docsBody = document.getElementById('printReportDocsBody');
+            docsBody.innerHTML = '';
+
+            const filteredDocs = appState.documents.filter(doc => {
+                const yearMatch = doc.year === selectedYear;
+                const areaMatch = selectedArea === 'ALL' ? true : doc.area === selectedArea;
+                const userMatch = isUserRegular ? doc.pic === user.name : true;
+                return yearMatch && areaMatch && userMatch;
+            });
+
+            filteredDocs.forEach((doc, idx) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="border border-slate-300 p-2 text-center">${idx + 1}</td>
+                    <td class="border border-slate-300 p-2 font-bold">${doc.name}</td>
+                    <td class="border border-slate-300 p-2">${doc.area}</td>
+                    <td class="border border-slate-300 p-2 text-center">${doc.year}</td>
+                    <td class="border border-slate-300 p-2 text-center">${doc.uploadDate}</td>
+                    <td class="border border-slate-300 p-2">${doc.pic}</td>
+                `;
+                docsBody.appendChild(tr);
+            });
+
+            document.getElementById('printModal').classList.remove('hidden');
+        }
+
+        function closePrintModal() {
+            document.getElementById('printModal').classList.add('hidden');
+        }
+
+        // Edit Targets Modal (Admin only)
+        function openTargetModal() {
+            const container = document.getElementById('targetInputsContainer');
+            container.innerHTML = '';
+
+            MCSP_AREAS.forEach(area => {
+                const div = document.createElement('div');
+                div.className = "flex items-center justify-between gap-3 p-2 bg-slate-50 rounded-xl border border-slate-200";
+                div.innerHTML = `
+                    <span class="text-xs font-semibold text-slate-700">${area}</span>
+                    <input type="number" min="1" max="100" name="target_${area}" value="${appState.targets[area] || 10}" 
+                        class="w-20 bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs text-center font-bold text-slate-800 focus:outline-none">
+                `;
+                container.appendChild(div);
+            });
+
+            document.getElementById('targetModal').classList.remove('hidden');
+        }
+
+        function closeTargetModal() {
+            document.getElementById('targetModal').classList.add('hidden');
+        }
+
+        function saveTargetChanges(e) {
+            e.preventDefault();
+            MCSP_AREAS.forEach(area => {
+                const val = document.querySelector(`input[name="target_${area}"]`).value;
+                appState.targets[area] = parseInt(val, 10) || 10;
+            });
+
+            saveState();
+            logActivity(`Memperbarui target tahunan dokumen MCSP`);
+            showToast('Target dokumen berhasil disimpan', 'success');
+            closeTargetModal();
+            renderReportContent();
+        }
+
+        // User Management View Logic (Admin Only)
+        function renderUsersTable() {
+            const tbody = document.getElementById('usersTableBody');
+            tbody.innerHTML = '';
+
+            appState.users.forEach(u => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 border-b border-slate-100";
+
+                const isMasterAdmin = u.username === 'inspektorat_admin';
+                const areasList = u.allowedAreas.length === MCSP_AREAS.length 
+                    ? `<span class="px-2 py-0.5 bg-indigo-100 text-indigo-700 font-bold rounded-md text-[10px]">Semua Area (8)</span>`
+                    : u.allowedAreas.map(a => `<span class="inline-block px-1.5 py-0.5 bg-slate-100 text-slate-700 rounded text-[10px] mr-1 mb-1">${a}</span>`).join('');
+
+                tr.innerHTML = `
+                    <td class="py-3 px-4 font-bold text-slate-800">${u.name}</td>
+                    <td class="py-3 px-4 font-mono text-slate-600">${u.username}</td>
+                    <td class="py-3 px-4">
+                        <span class="font-mono text-slate-400">••••••••</span>
+                    </td>
+                    <td class="py-3 px-4">
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-bold ${u.role === 'admin' ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-600'}">
+                            ${u.role === 'admin' ? 'Admin Utama' : 'User PIC'}
+                        </span>
+                    </td>
+                    <td class="py-3 px-4">${areasList}</td>
+                    <td class="py-3 px-4 text-center">
+                        <div class="flex items-center justify-center gap-1">
+                            <button onclick="editUser('${u.id}')" title="Edit User" class="p-1.5 text-slate-400 hover:text-indigo-600 rounded-lg hover:bg-indigo-50 transition">
+                                <i class="fa-solid fa-user-pen"></i>
+                            </button>
+                            ${!isMasterAdmin ? `
+                                <button onclick="deleteUser('${u.id}')" title="Hapus User" class="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition">
+                                    <i class="fa-solid fa-user-xmark"></i>
+                                </button>
+                            ` : ''}
+                        </div>
+                    </td>
+                `;
+
+                tbody.appendChild(tr);
+            });
+        }
+
+        function openUserModal(userId = null) {
+            document.getElementById('userForm').reset();
+
+            // Populate checkboxes
+            const container = document.getElementById('areaCheckboxes');
+            container.innerHTML = MCSP_AREAS.map(area => `
+                <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                    <input type="checkbox" name="userAllowedArea" value="${area}" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
+                    <span>${area}</span>
+                </label>
+            `).join('');
+
+            if (userId) {
+                const u = appState.users.find(x => x.id === userId);
+                if (u) {
+                    document.getElementById('userModalTitle').textContent = "Edit Pengguna";
+                    document.getElementById('userId').value = u.id;
+                    document.getElementById('userFullName').value = u.name;
+                    document.getElementById('userUsername').value = u.username;
+                    document.getElementById('userPassword').value = u.password;
+                    document.getElementById('userRole').value = u.role;
+
+                    // Check areas
+                    document.querySelectorAll('input[name="userAllowedArea"]').forEach(cb => {
+                        cb.checked = u.allowedAreas.includes(cb.value);
+                    });
+                }
+            } else {
+                document.getElementById('userModalTitle').textContent = "Tambah Pengguna Baru";
+                document.getElementById('userId').value = '';
+            }
+
+            toggleAreaCheckboxes();
+            document.getElementById('userModal').classList.remove('hidden');
+        }
+
+        function closeUserModal() {
+            document.getElementById('userModal').classList.add('hidden');
+        }
+
+        function toggleAreaCheckboxes() {
+            const role = document.getElementById('userRole').value;
+            const container = document.getElementById('areaAccessContainer');
+            if (role === 'admin') {
+                container.classList.add('hidden');
+            } else {
+                container.classList.remove('hidden');
+            }
+        }
+
+        function saveUser(e) {
+            e.preventDefault();
+            const id = document.getElementById('userId').value;
+            const name = document.getElementById('userFullName').value.trim();
+            const username = document.getElementById('userUsername').value.trim();
+            const password = document.getElementById('userPassword').value;
+            const role = document.getElementById('userRole').value;
+
+            let allowedAreas = [];
+            if (role === 'admin') {
+                allowedAreas = [...MCSP_AREAS];
+            } else {
+                document.querySelectorAll('input[name="userAllowedArea"]:checked').forEach(cb => {
+                    allowedAreas.push(cb.value);
+                });
+            }
+
+            if (id) {
+                const idx = appState.users.findIndex(u => u.id === id);
+                if (idx !== -1) {
+                    appState.users[idx] = { id, name, username, password, role, allowedAreas };
+                    logActivity(`Memperbarui data pengguna: ${name}`);
+                    showToast('Pengguna berhasil diperbarui', 'success');
+                }
+            } else {
+                const newUser = {
+                    id: 'usr-' + Date.now(),
+                    name, username, password, role, allowedAreas
+                };
+                appState.users.push(newUser);
+                logActivity(`Menambahkan pengguna baru: ${name}`);
+                showToast('Pengguna baru berhasil dibuat', 'success');
+            }
+
+            saveState();
+            closeUserModal();
+            renderUsersTable();
+        }
+
+        function editUser(id) {
+            openUserModal(id);
+        }
+
+        function deleteUser(id) {
+            const u = appState.users.find(x => x.id === id);
+            if (!u) return;
+
+            if (confirm(`Hapus pengguna "${u.name}"?`)) {
+                appState.users = appState.users.filter(x => x.id !== id);
+                saveState();
+                logActivity(`Menghapus pengguna: ${u.name}`);
+                showToast('Pengguna dihapus', 'info');
+                renderUsersTable();
+            }
+        }
+
+        // Activity Logs View
+        function renderActivityLogs() {
+            const timeline = document.getElementById('activityTimeline');
+            timeline.innerHTML = '';
+
+            if (appState.activityLogs.length === 0) {
+                timeline.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">Belum ada aktivitas tercatat</p>`;
+                return;
+            }
+
+            appState.activityLogs.forEach(log => {
+                const item = document.createElement('div');
+                item.className = "flex items-start gap-3 p-3 bg-slate-50/80 rounded-xl border border-slate-100";
+                item.innerHTML = `
+                    <div class="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs mt-0.5">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-xs font-bold text-slate-800">${log.user}</p>
+                        <p class="text-xs text-slate-600 mt-0.5">${log.action}</p>
+                        <p class="text-[10px] text-slate-400 mt-1">${log.time}</p>
+                    </div>
+                `;
+                timeline.appendChild(item);
+            });
+        }
+
+        function clearActivityLogs() {
+            if (confirm("Bersihkan semua catatan aktivitas?")) {
+                appState.activityLogs = [];
+                saveState();
+                renderActivityLogs();
+                showToast("Log aktivitas dibersihkan", "info");
+            }
+        }
+
+        // Utility: Toggle password input visibility
+        function togglePasswordVisibility(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        // Utility: Custom Toast Notifications
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+
+            const bg = type === 'success' ? 'bg-emerald-600' : (type === 'error' ? 'bg-rose-600' : 'bg-slate-800');
+            
+            toast.className = `${bg} text-white px-4 py-3 rounded-xl shadow-lg text-xs font-medium flex items-center gap-2 transform transition duration-300 translate-y-2 opacity-0 pointer-events-auto`;
+            toast.innerHTML = `
+                <i class="fa-solid ${type === 'success' ? 'fa-circle-check' : (type === 'error' ? 'fa-triangle-exclamation' : 'fa-circle-info')}"></i>
+                <span>${message}</span>
+            `;
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
