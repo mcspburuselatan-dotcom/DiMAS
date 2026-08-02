@@ -317,11 +317,28 @@ const ORGANISASI = [
 
 const YEARS = Array.from({length:10}, (_,i)=>2026+i);
 const DRIVE_ACCOUNT = 'mcspburuselatan@gmail.com';
+// Folder induk Google Drive tempat seluruh dokumen MCSP tersimpan otomatis.
+const DRIVE_BASE_URL = 'https://drive.google.com/drive/folders/1joocFulr1j_xbbuYrpCGGXKMiv6pIHXU?usp=drive_link';
+// Link folder per area MCSP di dalam folder induk di atas. Nilai default mengarah ke folder
+// induk sampai Admin Utama menetapkan link sub-folder resmi untuk masing-masing area
+// melalui menu "Kelola Folder Google Drive" pada halaman Data Dokumen.
+const DRIVE_FOLDERS_DEFAULT = {
+  apbd: DRIVE_BASE_URL,
+  pbj: DRIVE_BASE_URL,
+  yanpublik: DRIVE_BASE_URL,
+  asn: DRIVE_BASE_URL,
+  bmd: DRIVE_BASE_URL,
+  pad: DRIVE_BASE_URL,
+  apip: DRIVE_BASE_URL,
+};
 
 function areaOf(id){return AREAS.find(a=>a.id===id);}
 function areaName(id){const a=areaOf(id); return a?a.name:id;}
 function areaColor(id){const a=areaOf(id); return a?a.color:'#888';}
-function driveFolderUrl(areaId, year){return 'https://drive.google.com/drive/folders/1kqOe9wv5uY45goXNviZ3mMfv7dQyucVK?usp=drive_link'+areaId+'-'+year;}
+function driveFolderUrl(areaId){
+  if(DB.driveFolders && DB.driveFolders[areaId]) return DB.driveFolders[areaId];
+  return DRIVE_BASE_URL;
+}
 
 const DB = {
   users:[
@@ -335,22 +352,23 @@ const DB = {
     {id:'u8', username:'yusuf.itwil', password:'itwil2026', name:'Yusuf Setiawan', role:'user', organisasi:'Inspektorat', areas:['apip']},
   ],
   documents:[
-    {id:'d1', area:'apbd', tahun:2026, namaDokumen:'KUA-PPAS APBD 2026', tanggalUpload:'12/01/2026', picUserId:'u2', fileName:'kua-ppas-2026.pdf', driveLink:driveFolderUrl('apbd',2026)+'/kua-ppas.pdf', status:'Lengkap', catatan:''},
-    {id:'d2', area:'apbd', tahun:2026, namaDokumen:'Nota Kesepakatan KUA-PPAS', tanggalUpload:'15/01/2026', picUserId:'u2', fileName:'nota-kesepakatan.pdf', driveLink:driveFolderUrl('apbd',2026)+'/nota-kesepakatan.pdf', status:'Belum Lengkap', catatan:'Lampiran tanda tangan DPRD belum tersedia, mohon dilengkapi.'},
-    {id:'d3', area:'apbd', tahun:2026, namaDokumen:'Perda APBD 2026', tanggalUpload:'20/01/2026', picUserId:'u3', fileName:'perda-apbd-2026.pdf', driveLink:driveFolderUrl('apbd',2026)+'/perda.pdf', status:'Lengkap', catatan:''},
-    {id:'d4', area:'bmd', tahun:2026, namaDokumen:'Laporan Inventarisasi Aset 2026', tanggalUpload:'10/02/2026', picUserId:'u3', fileName:'inventarisasi-aset.xlsx', driveLink:driveFolderUrl('bmd',2026)+'/inventarisasi.xlsx', status:'Belum Lengkap', catatan:'Data aset kecamatan belum direkap seluruhnya.'},
-    {id:'d5', area:'bmd', tahun:2026, namaDokumen:'SK Penghapusan Aset', tanggalUpload:'18/02/2026', picUserId:'u3', fileName:'sk-penghapusan.pdf', driveLink:driveFolderUrl('bmd',2026)+'/sk-penghapusan.pdf', status:'Lengkap', catatan:''},
-    {id:'d6', area:'pbj', tahun:2026, namaDokumen:'Rencana Umum Pengadaan 2026', tanggalUpload:'05/01/2026', picUserId:'u4', fileName:'rup-2026.pdf', driveLink:driveFolderUrl('pbj',2026)+'/rup.pdf', status:'Lengkap', catatan:''},
-    {id:'d7', area:'pbj', tahun:2026, namaDokumen:'Kontrak Pengadaan Barang Q1', tanggalUpload:'22/02/2026', picUserId:'u4', fileName:'kontrak-q1.pdf', driveLink:driveFolderUrl('pbj',2026)+'/kontrak-q1.pdf', status:'Belum Lengkap', catatan:'Kwitansi pembayaran termin 2 belum diunggah.'},
-    {id:'d8', area:'yanpublik', tahun:2026, namaDokumen:'SOP Pelayanan Perizinan', tanggalUpload:'08/01/2026', picUserId:'u5', fileName:'sop-perizinan.pdf', driveLink:driveFolderUrl('yanpublik',2026)+'/sop.pdf', status:'Lengkap', catatan:''},
-    {id:'d9', area:'yanpublik', tahun:2026, namaDokumen:'Survei Kepuasan Masyarakat Triwulan I', tanggalUpload:'25/03/2026', picUserId:'u5', fileName:'skm-tw1.pdf', driveLink:driveFolderUrl('yanpublik',2026)+'/skm-tw1.pdf', status:'Lengkap', catatan:''},
-    {id:'d10', area:'asn', tahun:2026, namaDokumen:'Peta Jabatan ASN 2026', tanggalUpload:'14/01/2026', picUserId:'u6', fileName:'peta-jabatan.xlsx', driveLink:driveFolderUrl('asn',2026)+'/peta-jabatan.xlsx', status:'Lengkap', catatan:''},
-    {id:'d11', area:'asn', tahun:2026, namaDokumen:'Laporan Diklat Kepegawaian', tanggalUpload:'02/03/2026', picUserId:'u6', fileName:'laporan-diklat.pdf', driveLink:driveFolderUrl('asn',2026)+'/diklat.pdf', status:'Belum Lengkap', catatan:'Sertifikat peserta belum lengkap untuk 3 nama.'},
-    {id:'d12', area:'pad', tahun:2026, namaDokumen:'Target dan Realisasi PAD Tahun 2026', tanggalUpload:'11/01/2026', picUserId:'u7', fileName:'target-realisasi-pad.xlsx', driveLink:driveFolderUrl('pad',2026)+'/pad.xlsx', status:'Lengkap', catatan:''},
-    {id:'d13', area:'pad', tahun:2026, namaDokumen:'Kajian Potensi Pajak Daerah', tanggalUpload:'19/02/2026', picUserId:'u7', fileName:'kajian-pajak.pdf', driveLink:driveFolderUrl('pad',2026)+'/kajian-pajak.pdf', status:'Belum Lengkap', catatan:'Ringkasan eksekutif belum disertakan.'},
-    {id:'d14', area:'apip', tahun:2026, namaDokumen:'PKPT Inspektorat 2026', tanggalUpload:'06/01/2026', picUserId:'u8', fileName:'pkpt-2026.pdf', driveLink:driveFolderUrl('apip',2026)+'/pkpt.pdf', status:'Lengkap', catatan:''},
-    {id:'d15', area:'apip', tahun:2026, namaDokumen:'Laporan Pemantauan Tindak Lanjut', tanggalUpload:'28/02/2026', picUserId:'u8', fileName:'tindak-lanjut.pdf', driveLink:driveFolderUrl('apip',2026)+'/tindak-lanjut.pdf', status:'Lengkap', catatan:''},
+    {id:'d1', area:'apbd', tahun:2026, namaDokumen:'KUA-PPAS APBD 2026', tanggalUpload:'12/01/2026', picUserId:'u2', fileName:'kua-ppas-2026.pdf', driveLink:DRIVE_FOLDERS_DEFAULT.apbd, status:'Lengkap', catatan:''},
+    {id:'d2', area:'apbd', tahun:2026, namaDokumen:'Nota Kesepakatan KUA-PPAS', tanggalUpload:'15/01/2026', picUserId:'u2', fileName:'nota-kesepakatan.pdf', driveLink:DRIVE_FOLDERS_DEFAULT.apbd, status:'Belum Lengkap', catatan:'Lampiran tanda tangan DPRD belum tersedia, mohon dilengkapi.'},
+    {id:'d3', area:'apbd', tahun:2026, namaDokumen:'Perda APBD 2026', tanggalUpload:'20/01/2026', picUserId:'u3', fileName:'perda-apbd-2026.pdf', driveLink:DRIVE_FOLDERS_DEFAULT.apbd, status:'Lengkap', catatan:''},
+    {id:'d4', area:'bmd', tahun:2026, namaDokumen:'Laporan Inventarisasi Aset 2026', tanggalUpload:'10/02/2026', picUserId:'u3', fileName:'inventarisasi-aset.xlsx', driveLink:DRIVE_FOLDERS_DEFAULT.bmd, status:'Belum Lengkap', catatan:'Data aset kecamatan belum direkap seluruhnya.'},
+    {id:'d5', area:'bmd', tahun:2026, namaDokumen:'SK Penghapusan Aset', tanggalUpload:'18/02/2026', picUserId:'u3', fileName:'sk-penghapusan.pdf', driveLink:DRIVE_FOLDERS_DEFAULT.bmd, status:'Lengkap', catatan:''},
+    {id:'d6', area:'pbj', tahun:2026, namaDokumen:'Rencana Umum Pengadaan 2026', tanggalUpload:'05/01/2026', picUserId:'u4', fileName:'rup-2026.pdf', driveLink:DRIVE_FOLDERS_DEFAULT.pbj, status:'Lengkap', catatan:''},
+    {id:'d7', area:'pbj', tahun:2026, namaDokumen:'Kontrak Pengadaan Barang Q1', tanggalUpload:'22/02/2026', picUserId:'u4', fileName:'kontrak-q1.pdf', driveLink:DRIVE_FOLDERS_DEFAULT.pbj, status:'Belum Lengkap', catatan:'Kwitansi pembayaran termin 2 belum diunggah.'},
+    {id:'d8', area:'yanpublik', tahun:2026, namaDokumen:'SOP Pelayanan Perizinan', tanggalUpload:'08/01/2026', picUserId:'u5', fileName:'sop-perizinan.pdf', driveLink:DRIVE_FOLDERS_DEFAULT.yanpublik, status:'Lengkap', catatan:''},
+    {id:'d9', area:'yanpublik', tahun:2026, namaDokumen:'Survei Kepuasan Masyarakat Triwulan I', tanggalUpload:'25/03/2026', picUserId:'u5', fileName:'skm-tw1.pdf', driveLink:DRIVE_FOLDERS_DEFAULT.yanpublik, status:'Lengkap', catatan:''},
+    {id:'d10', area:'asn', tahun:2026, namaDokumen:'Peta Jabatan ASN 2026', tanggalUpload:'14/01/2026', picUserId:'u6', fileName:'peta-jabatan.xlsx', driveLink:DRIVE_FOLDERS_DEFAULT.asn, status:'Lengkap', catatan:''},
+    {id:'d11', area:'asn', tahun:2026, namaDokumen:'Laporan Diklat Kepegawaian', tanggalUpload:'02/03/2026', picUserId:'u6', fileName:'laporan-diklat.pdf', driveLink:DRIVE_FOLDERS_DEFAULT.asn, status:'Belum Lengkap', catatan:'Sertifikat peserta belum lengkap untuk 3 nama.'},
+    {id:'d12', area:'pad', tahun:2026, namaDokumen:'Target dan Realisasi PAD Tahun 2026', tanggalUpload:'11/01/2026', picUserId:'u7', fileName:'target-realisasi-pad.xlsx', driveLink:DRIVE_FOLDERS_DEFAULT.pad, status:'Lengkap', catatan:''},
+    {id:'d13', area:'pad', tahun:2026, namaDokumen:'Kajian Potensi Pajak Daerah', tanggalUpload:'19/02/2026', picUserId:'u7', fileName:'kajian-pajak.pdf', driveLink:DRIVE_FOLDERS_DEFAULT.pad, status:'Belum Lengkap', catatan:'Ringkasan eksekutif belum disertakan.'},
+    {id:'d14', area:'apip', tahun:2026, namaDokumen:'PKPT Inspektorat 2026', tanggalUpload:'06/01/2026', picUserId:'u8', fileName:'pkpt-2026.pdf', driveLink:DRIVE_FOLDERS_DEFAULT.apip, status:'Lengkap', catatan:''},
+    {id:'d15', area:'apip', tahun:2026, namaDokumen:'Laporan Pemantauan Tindak Lanjut', tanggalUpload:'28/02/2026', picUserId:'u8', fileName:'tindak-lanjut.pdf', driveLink:DRIVE_FOLDERS_DEFAULT.apip, status:'Lengkap', catatan:''},
   ],
+  driveFolders: Object.assign({}, DRIVE_FOLDERS_DEFAULT),
   targets:{
     2026:{apbd:20, pbj:20, yanpublik:20, asn:20, bmd:20, pad:20, apip:20}
   },
@@ -361,6 +379,19 @@ const DB = {
   ]
 };
 
+function svgDonut(pct, color, size, stroke){
+  size = size || 130; stroke = stroke || 16;
+  const r=(size-stroke)/2, c=size/2;
+  const circumference = 2*Math.PI*r;
+  const clamped = Math.max(0, Math.min(100, pct));
+  const offset = circumference*(1-clamped/100);
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+    <circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="#E2E6ED" stroke-width="${stroke}"/>
+    <circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="${color}" stroke-width="${stroke}" stroke-dasharray="${circumference}" stroke-dashoffset="${offset}" stroke-linecap="round" transform="rotate(-90 ${c} ${c})"/>
+    <text x="${c}" y="${c-3}" text-anchor="middle" font-size="${Math.round(size*0.17)}" font-weight="800" fill="#16274A" font-family="Plus Jakarta Sans, sans-serif">${clamped}%</text>
+    <text x="${c}" y="${c+15}" text-anchor="middle" font-size="${Math.round(size*0.075)}" fill="#8A93A3" font-family="Inter, sans-serif" letter-spacing="0.5">LENGKAP</text>
+  </svg>`;
+}
 function getTarget(year, areaId){
   if(DB.targets[year] && DB.targets[year][areaId]!=null) return DB.targets[year][areaId];
   return 20;
@@ -727,14 +758,15 @@ function pageDokumen(){
 
   const areaOptions = `<option value="all">Semua Area</option>` + myAreas.map(a=>`<option value="${a.id}" ${f.area===a.id?'selected':''}>${esc(a.name)}</option>`).join('');
 
-  const driveCard = (admin && f.area!=='all') ? `
+  const driveCard = admin ? `
     <div class="card card-pad" style="margin-bottom:16px; display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
       <div class="stat-icon" style="background:var(--info-bg); color:var(--info); margin:0;">${ICONS.folder}</div>
       <div style="flex:1; min-width:200px;">
-        <div style="font-weight:700; font-size:13px; color:var(--navy);">Folder Google Drive &mdash; ${esc(areaName(f.area))}</div>
-        <div style="font-size:11.5px; color:var(--text-muted);">Terhubung ke akun ${DRIVE_ACCOUNT} &middot; hanya terlihat oleh Admin Utama</div>
+        <div style="font-weight:700; font-size:13px; color:var(--navy);">Penyimpanan Google Drive${f.area!=='all'?' &mdash; '+esc(areaName(f.area)):''}</div>
+        <div style="font-size:11.5px; color:var(--text-muted);">Dokumen tersimpan otomatis ke akun ${DRIVE_ACCOUNT}, di dalam folder area MCSP masing-masing &middot; hanya terlihat oleh Admin Utama</div>
       </div>
-      <a class="btn btn-outline btn-sm" href="${driveFolderUrl(f.area, STATE.dashboard.year||2026)}" target="_blank" rel="noopener">${ICONS.link} Buka Folder Drive</a>
+      ${f.area!=='all' ? `<a class="btn btn-outline btn-sm" href="${driveFolderUrl(f.area)}" target="_blank" rel="noopener">${ICONS.link} Buka Folder ${esc(areaName(f.area))}</a>` : ''}
+      <button class="btn btn-outline btn-sm" onclick="openDriveFolderManager()">${ICONS.edit} Kelola Folder Area</button>
     </div>` : '';
 
   const rows = docs.map((d,i)=>{
@@ -882,10 +914,13 @@ function dokumenFormView(){
       ${admin ? `
       <div class="field">
         <label>Keterangan (Link Penyimpanan Google Drive)</label>
-        <input type="text" id="fLink" placeholder="https://drive.google.com/drive/folders/1kqOe9wv5uY45goXNviZ3mMfv7dQyucVK?usp=drive_link" value="${editing?esc(editing.driveLink||''):''}">
-        <div class="field-hint">${ICONS.lock} Kolom ini hanya dapat dilihat oleh Admin Utama, tidak ditampilkan kepada pengguna.</div>
+        <div style="display:flex; gap:8px;">
+          <input type="text" id="fLink" style="flex:1;" placeholder="${esc(DRIVE_BASE_URL)}" value="${editing?esc(editing.driveLink||''):esc(driveFolderUrl(editing?editing.area:(myAreas[0]?myAreas[0].id:'')))}">
+          <button type="button" class="btn btn-outline btn-sm" onclick="useAreaFolderLink()">${ICONS.folder} Folder Area</button>
+        </div>
+        <div class="field-hint">${ICONS.lock} Dokumen ini otomatis diarahkan ke folder Google Drive sesuai Area MCSP yang dipilih di atas (akun ${DRIVE_ACCOUNT}). Kolom ini hanya dapat dilihat oleh Admin Utama.</div>
       </div>` : `
-      <div class="alert alert-info" style="margin-bottom:16px;">${ICONS.info}<span>Link penyimpanan dokumen di Google Drive akan dikelola oleh Admin Utama dan tidak ditampilkan di akun Anda.</span></div>
+      <div class="alert alert-info" style="margin-bottom:16px;">${ICONS.info}<span>Dokumen ini akan otomatis tersimpan pada folder Google Drive sesuai Area MCSP di atas, dikelola oleh Admin Utama dan tidak ditampilkan di akun Anda.</span></div>
       `}
       <div style="display:flex; gap:10px; margin-top:20px;">
         <button type="submit" class="btn btn-primary">${ICONS.check} Simpan Dokumen</button>
@@ -901,6 +936,11 @@ function onFilePick(input){
     render();
   }
 }
+function useAreaFolderLink(){
+  const areaEl=document.getElementById('fArea');
+  const linkEl=document.getElementById('fLink');
+  if(areaEl && linkEl) linkEl.value = driveFolderUrl(areaEl.value);
+}
 function saveDokumen(e){
   e.preventDefault();
   const u=STATE.currentUser;
@@ -909,22 +949,24 @@ function saveDokumen(e){
   const tahun=parseInt(document.getElementById('fTahun').value);
   const nama=document.getElementById('fNama').value.trim();
   const linkEl=document.getElementById('fLink');
-  const link= linkEl ? linkEl.value.trim() : undefined;
+  // Dokumen otomatis diarahkan ke folder Drive area terkait jika kolom link dikosongkan
+  const link= linkEl ? (linkEl.value.trim() || driveFolderUrl(area)) : undefined;
   const editing = STATE.dokumen.editingId ? DB.documents.find(d=>d.id===STATE.dokumen.editingId) : null;
 
   if(editing){
     editing.area=area; editing.tahun=tahun; editing.namaDokumen=nama;
     if(STATE.dokumen.tempFile) editing.fileName=STATE.dokumen.tempFile;
     if(admin && link!==undefined) editing.driveLink=link;
+    else if(!admin) editing.driveLink=driveFolderUrl(area);
     logAct('Edit Dokumen', 'Memperbarui dokumen "'+nama+'" ('+areaName(area)+')');
   } else {
     const newDoc = {
       id:uid('d'), area, tahun, namaDokumen:nama, tanggalUpload:todayStr(),
-      picUserId:u.id, fileName:STATE.dokumen.tempFile||'', driveLink: admin?(link||''):'',
+      picUserId:u.id, fileName:STATE.dokumen.tempFile||'', driveLink: admin?(link||driveFolderUrl(area)):driveFolderUrl(area),
       status:'Belum Lengkap', catatan:''
     };
     DB.documents.push(newDoc);
-    logAct('Tambah Dokumen', 'Menambahkan dokumen "'+nama+'" ('+areaName(area)+')');
+    logAct('Tambah Dokumen', 'Menambahkan dokumen "'+nama+'" pada area '+areaName(area)+' (tersimpan ke folder Drive '+areaName(area)+')');
   }
   STATE.dokumen.view='list';
   STATE.dokumen.editingId=null;
@@ -940,11 +982,37 @@ function openStatusModal(id){
 function saveStatus(id){
   const doc=DB.documents.find(d=>d.id===id);
   if(!doc) return;
+  const statusBefore=doc.status, catatanBefore=doc.catatan;
   const status=document.getElementById('mStatus').value;
   const catatan=document.getElementById('mCatatan').value.trim();
   doc.status=status;
-  doc.catatan= status==='Lengkap' ? '' : catatan;
-  logAct('Ubah Status', 'Menandai "'+doc.namaDokumen+'" sebagai '+status);
+  doc.catatan=catatan;
+  const changeParts=[];
+  if(status!==statusBefore) changeParts.push('status: '+status);
+  if(catatan!==catatanBefore) changeParts.push('catatan diperbarui');
+  logAct('Ubah Status & Catatan', 'Memperbarui "'+doc.namaDokumen+'" ('+(changeParts.join(', ')||'tidak ada perubahan')+')');
+  STATE.modal=null;
+  render();
+}
+
+/* ---- Kelola Folder Google Drive per Area (admin only) ---- */
+function openDriveFolderManager(){
+  STATE.modal={type:'driveFolders'};
+  render();
+}
+function saveDriveFolders(){
+  if(!DB.driveFolders) DB.driveFolders={};
+  const changes=[];
+  AREAS.forEach(a=>{
+    const el=document.getElementById('mdf_'+a.id);
+    if(!el) return;
+    const val=el.value.trim() || DRIVE_BASE_URL;
+    if(val!==DB.driveFolders[a.id]) changes.push(areaName(a.id));
+    DB.driveFolders[a.id]=val;
+  });
+  if(changes.length){
+    logAct('Kelola Folder Google Drive', 'Memperbarui link folder Drive untuk area: '+changes.join(', '));
+  }
   STATE.modal=null;
   render();
 }
@@ -999,6 +1067,38 @@ function pageLaporan(){
 
   const printTitle = f.area==='all' ? 'Semua Area MCSP' : areaName(f.area);
 
+  // Dokumen lengkap & belum lengkap untuk daftar pada laporan (sesuai cakupan filter & hak akses)
+  let printDocs = DB.documents.filter(d=> d.tahun===year && areasToShow.some(a=>a.id===d.area));
+  if(!admin) printDocs = printDocs.filter(d=>d.picUserId===u.id);
+  printDocs = printDocs.slice().sort((x,y)=> areaName(x.area).localeCompare(areaName(y.area)) || x.namaDokumen.localeCompare(y.namaDokumen));
+  const printLengkap = printDocs.filter(d=>d.status==='Lengkap');
+  const printBelum = printDocs.filter(d=>d.status!=='Lengkap');
+
+  const lengkapListHtml = printLengkap.length ? printLengkap.map((d,i)=>{
+    const pic=getUser(d.picUserId);
+    return `<tr>
+      <td>${i+1}</td>
+      <td>${esc(d.namaDokumen)}</td>
+      <td><span class="pill pill-area" style="border-left:3px solid ${areaColor(d.area)}; padding-left:7px;">${esc(areaName(d.area))}</span></td>
+      <td>${esc(pic?pic.name:'-')}</td>
+      <td>${d.tanggalUpload}</td>
+    </tr>`;
+  }).join('') : `<tr><td colspan="5" class="table-empty">Tidak ada dokumen lengkap pada cakupan ini.</td></tr>`;
+
+  const belumListHtml = printBelum.length ? printBelum.map((d,i)=>{
+    const pic=getUser(d.picUserId);
+    return `<tr>
+      <td>${i+1}</td>
+      <td>${esc(d.namaDokumen)}</td>
+      <td><span class="pill pill-area" style="border-left:3px solid ${areaColor(d.area)}; padding-left:7px;">${esc(areaName(d.area))}</span></td>
+      <td>${esc(pic?pic.name:'-')}</td>
+      <td>${esc(d.catatan)||'&mdash;'}</td>
+    </tr>`;
+  }).join('') : `<tr><td colspan="5" class="table-empty">Tidak ada dokumen belum lengkap pada cakupan ini.</td></tr>`;
+
+  const totalDocsPrint = printDocs.length;
+  const donutPct = totalDocsPrint>0 ? Math.round(printLengkap.length/totalDocsPrint*100) : 0;
+
   return `
   <div class="page-desc">${admin ? 'Rekapitulasi jumlah dokumen terinput dibandingkan target per area MCSP.' : 'Rekapitulasi dokumen yang Anda input dibandingkan target area MCSP Anda.'}</div>
 
@@ -1031,7 +1131,21 @@ function pageLaporan(){
       </div>
     </div>
 
-    <div class="section-title">Tabel Rekapitulasi</div>
+    <div class="section-title">Ringkasan Grafik</div>
+    <div class="card card-pad" style="display:flex; align-items:center; gap:24px; flex-wrap:wrap;">
+      ${svgDonut(donutPct, '#2E7D5B')}
+      <div style="flex:1; min-width:200px;">
+        <div style="font-size:12.5px; color:var(--text-secondary); line-height:1.7;">
+          Dari <b>${totalDocsPrint} dokumen</b> yang terinput pada cakupan laporan ini, <b style="color:var(--success)">${printLengkap.length} dokumen (${donutPct}%)</b> telah dinyatakan <b>Lengkap</b> dan <b style="color:var(--danger)">${printBelum.length} dokumen (${100-donutPct}%)</b> masih <b>Belum Lengkap</b>.
+        </div>
+        <div style="display:flex; gap:16px; margin-top:12px;">
+          <div style="display:flex; align-items:center; gap:6px; font-size:12px;"><span style="width:10px;height:10px;border-radius:3px;background:#2E7D5B;display:inline-block;"></span>Lengkap (${printLengkap.length})</div>
+          <div style="display:flex; align-items:center; gap:6px; font-size:12px;"><span style="width:10px;height:10px;border-radius:3px;background:#E2E6ED;display:inline-block;"></span>Belum Lengkap (${printBelum.length})</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title">Tabel Rekapitulasi Realisasi vs Target</div>
     <div class="table-wrap">
       <table>
         <thead><tr><th>Area MCSP</th><th>Realisasi</th><th>Target</th><th>Capaian</th></tr></thead>
@@ -1039,9 +1153,29 @@ function pageLaporan(){
       </table>
     </div>
 
-    <div class="section-title">Diagram Realisasi vs Target</div>
+    <div class="section-title">Diagram Realisasi vs Target per Area</div>
     <div class="card card-pad">
       ${barsHtml || '<div class="table-empty">Tidak ada data untuk ditampilkan.</div>'}
+    </div>
+
+    <div class="section-title">Daftar Dokumen Lengkap (${printLengkap.length})</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>No</th><th>Nama Dokumen</th><th>Area MCSP</th><th>PIC</th><th>Tgl Upload</th></tr></thead>
+        <tbody>${lengkapListHtml}</tbody>
+      </table>
+    </div>
+
+    <div class="section-title">Daftar Dokumen Belum Lengkap (${printBelum.length})</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>No</th><th>Nama Dokumen</th><th>Area MCSP</th><th>PIC</th><th>Catatan</th></tr></thead>
+        <tbody>${belumListHtml}</tbody>
+      </table>
+    </div>
+
+    <div style="margin-top:18px; font-size:11px; color:var(--text-muted); border-top:1px solid var(--border); padding-top:10px;">
+      Laporan ini dihasilkan otomatis oleh sistem DiMAS &middot; seluruh berkas dokumen tersimpan pada Google Drive akun ${DRIVE_ACCOUNT}.
     </div>
   </div>
   `;
@@ -1279,7 +1413,7 @@ function renderModal(){
   if(m.type==='status'){
     const doc=DB.documents.find(d=>d.id===m.id);
     inner=`
-      <div class="modal-head"><h3>Kelengkapan Dokumen</h3><button class="modal-close" onclick="closeModal()">${ICONS.x}</button></div>
+      <div class="modal-head"><h3>Kelengkapan &amp; Catatan Dokumen</h3><button class="modal-close" onclick="closeModal()">${ICONS.x}</button></div>
       <div class="modal-body">
         <div class="field-hint" style="margin-bottom:14px; font-size:12.5px;">Dokumen: <b style="color:var(--text-primary)">${esc(doc.namaDokumen)}</b></div>
         <div class="field">
@@ -1291,13 +1425,29 @@ function renderModal(){
         </div>
         <div class="field">
           <label>Catatan untuk Pengguna</label>
-          <textarea id="mCatatan" rows="3" placeholder="Jelaskan berkas apa saja yang belum lengkap...">${esc(doc.catatan)}</textarea>
-          <div class="field-hint">Catatan ini akan tampil kepada pengguna terkait pada Data Dokumen.</div>
+          <textarea id="mCatatan" rows="3" placeholder="Jelaskan berkas apa saja yang belum lengkap, atau catatan lain untuk PIC dokumen...">${esc(doc.catatan)}</textarea>
+          <div class="field-hint">Admin Utama dapat menulis atau mengubah catatan kapan saja, baik status Lengkap maupun Belum Lengkap. Catatan ini akan tampil kepada pengguna terkait pada Data Dokumen.</div>
         </div>
       </div>
       <div class="modal-foot">
         <button class="btn btn-outline" onclick="closeModal()">Batal</button>
         <button class="btn btn-primary" onclick="saveStatus('${doc.id}')">Simpan</button>
+      </div>`;
+  } else if(m.type==='driveFolders'){
+    const rowsHtml = AREAS.map(a=>`
+      <div class="field">
+        <label style="display:flex; align-items:center; gap:7px;"><span style="width:8px; height:8px; border-radius:50%; background:${a.color}; flex-shrink:0; display:inline-block;"></span>${esc(a.name)}</label>
+        <input type="text" id="mdf_${a.id}" value="${esc((DB.driveFolders&&DB.driveFolders[a.id])||DRIVE_BASE_URL)}" placeholder="${esc(DRIVE_BASE_URL)}">
+      </div>`).join('');
+    inner=`
+      <div class="modal-head"><h3>Kelola Folder Google Drive per Area</h3><button class="modal-close" onclick="closeModal()">${ICONS.x}</button></div>
+      <div class="modal-body">
+        <div class="alert alert-info" style="margin-bottom:16px;">${ICONS.info}<span>Folder induk: <b>${DRIVE_ACCOUNT}</b>. Tempelkan link sub-folder Google Drive resmi untuk masing-masing area MCSP (dibuat di dalam folder induk), agar dokumen yang diinput pada area tersebut otomatis terarah ke folder yang tepat &mdash; misalnya dokumen area "Penguatan APIP" akan tersimpan di folder "Penguatan APIP".</span></div>
+        ${rowsHtml}
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-outline" onclick="closeModal()">Batal</button>
+        <button class="btn btn-primary" onclick="saveDriveFolders()">Simpan Semua Folder</button>
       </div>`;
   } else if(m.type==='target'){
     const cur = getTarget(STATE.laporan.year, m.areaId);
