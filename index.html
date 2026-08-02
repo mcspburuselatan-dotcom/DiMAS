@@ -6,6 +6,11 @@
 <title>DiMAS - Digitalisasi MCSP Arsip Sistem</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- Firebase (sinkronisasi data real-time) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<!-- Google Identity Services (login Google untuk unggah ke Drive) -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
 :root{
   --navy:#16274A;
@@ -419,89 +424,181 @@ const STATE = {
 };
 
 /* ============================================================
-   SINKRONISASI BACKEND (Google Apps Script + Google Drive)
+   SINKRONISASI REAL-TIME (Firebase Firestore) + UPLOAD KE GOOGLE DRIVE
    ------------------------------------------------------------
-   Isi CONFIG.BACKEND_URL dengan URL Web App Apps Script setelah
-   Anda men-deploy file "apps-script-backend.gs" yang disertakan.
-   Selama BACKEND_URL kosong, aplikasi tetap berjalan seperti biasa
-   secara lokal (tanpa penyimpanan permanen / tanpa sinkron lintas
-   perangkat) — jadi file ini tetap aman dibuka langsung di browser.
+   Cocok untuk hosting statis (GitHub Pages / Netlify / dsb) karena
+   semuanya dipanggil langsung dari browser, tanpa server sendiri.
+
+   1) FIREBASE FIRESTORE — menyimpan & menyinkronkan seluruh data
+      aplikasi (dokumen, pengguna, target, riwayat) secara real-time
+      ke semua perangkat yang mengakses. Setup (gratis):
+        a. Buka https://console.firebase.google.com -> Add project.
+        b. Di project, buka Build -> Firestore Database -> Create database
+           (mode production, pilih region terdekat, mis. asia-southeast2).
+        c. Buka Project settings -> General -> scroll ke "Your apps" ->
+           tambah "Web app" -> salin objek firebaseConfig yang muncul.
+        d. Tempel objek tsb ke CONFIG.FIREBASE di bawah.
+        e. Di Firestore -> Rules, untuk mulai cepat bisa pakai (SEMENTARA,
+           idealnya diperketat lagi nanti karena rules ini mengizinkan
+           siapa pun yang tahu project ID membaca/menulis):
+             rules_version = '2';
+             service cloud.firestore {
+               match /databases/{database}/documents {
+                 match /dimas/{doc} { allow read, write: if true; }
+               }
+             }
+      Selama CONFIG.FIREBASE kosong, aplikasi tetap jalan seperti biasa
+      secara lokal di browser (tanpa sinkron lintas perangkat).
+
+   2) GOOGLE DRIVE API (OAuth langsung dari browser) — mengunggah berkas
+      dokumen sungguhan ke folder Drive area terkait. Setup (gratis):
+        a. Buka https://console.cloud.google.com -> buat/pilih project.
+        b. APIs & Services -> Library -> aktifkan "Google Drive API".
+        c. APIs & Services -> OAuth consent screen -> isi info dasar,
+           lalu di bagian "Test users" tambahkan alamat Gmail setiap
+           orang yang akan mengunggah dokumen (mis. mcspburuselatan@gmail.com
+           dan akun tiap OPD), supaya tidak perlu proses verifikasi Google.
+        d. APIs & Services -> Credentials -> Create credentials -> OAuth
+           client ID -> tipe "Web application" -> di "Authorized JavaScript
+           origins" tambahkan alamat GitHub Pages Anda, misalnya
+           https://namaakun.github.io (tanpa slash di akhir).
+        e. Salin "Client ID" -> tempel ke CONFIG.GOOGLE_DRIVE_CLIENT_ID.
+      Saat pengguna pertama kali mengunggah dokumen di sesi tsb, akan
+      muncul pop-up izin masuk Google (harus login dengan akun yang
+      punya akses ke folder Drive tujuan / termasuk di Test users).
+      Selama CONFIG.GOOGLE_DRIVE_CLIENT_ID kosong, nama berkas tetap
+      dicatat seperti sebelumnya tapi berkasnya tidak diunggah ke Drive.
    ============================================================ */
 const CONFIG = {
-  BACKEND_URL: '', // <-- tempel URL Web App Apps Script di sini
-  POLL_MS: 4000,   // seberapa sering menarik data terbaru dari perangkat lain
+  FIREBASE: null, // <-- isi dgn objek firebaseConfig dari Firebase Console, mis: {apiKey:'...', authDomain:'...', projectId:'...', ...}
+  GOOGLE_DRIVE_CLIENT_ID: '', // <-- isi dgn OAuth Client ID dari Google Cloud Console
 };
-function backendEnabled(){ return !!CONFIG.BACKEND_URL; }
+const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive';
 
-let lastKnownStateJSON = '';
+function firestoreEnabled(){ return !!CONFIG.FIREBASE; }
+function driveEnabled(){ return !!CONFIG.GOOGLE_DRIVE_CLIENT_ID; }
+
+let fsDb = null;
+let fsDocRef = null;
+let applyingRemoteUpdate = false; // cegah loop: update dari server memicu simpan lagi
 let syncTimer = null;
 
-async function backendCall(action, payload){
-  if(!backendEnabled()) return null;
-  try{
-    const res = await fetch(CONFIG.BACKEND_URL, {
-      method:'POST',
-      headers:{'Content-Type':'text/plain;charset=utf-8'}, // text/plain menghindari CORS preflight di Apps Script
-      body: JSON.stringify({action, payload})
-    });
-    const data = await res.json();
-    if(!data.ok) throw new Error(data.error || 'Gagal memproses permintaan di server.');
-    setSyncStatus('ok');
-    return data.result;
-  }catch(err){
-    console.error('Backend error:', err);
-    setSyncStatus('error', err.message || String(err));
-    return null;
-  }
-}
 function setSyncStatus(kind, msg){
   const el = document.getElementById('syncStatus');
   if(!el) return;
-  if(kind==='ok') el.innerHTML = '';
-  else el.innerHTML = `<span title="${esc(msg||'')}" style="color:var(--danger); font-size:11px;">${ICONS.alert} Sinkron gagal</span>`;
+  if(kind==='ok') el.innerHTML = `<span style="color:var(--success); font-size:11px;">${ICONS.check} Tersinkron</span>`;
+  else if(kind==='error') el.innerHTML = `<span title="${esc(msg||'')}" style="color:var(--danger); font-size:11px;">${ICONS.alert} Sinkron gagal</span>`;
+  else el.innerHTML = '';
+}
+
+function initFirestore(){
+  if(!firestoreEnabled()) return;
+  firebase.initializeApp(CONFIG.FIREBASE);
+  fsDb = firebase.firestore();
+  fsDocRef = fsDb.collection('dimas').doc('state');
+  // Dengarkan perubahan data secara real-time dari perangkat lain manapun.
+  fsDocRef.onSnapshot(function(snap){
+    if(!snap.exists) return;
+    const incoming = snap.data() && snap.data().db;
+    if(!incoming) return;
+    applyingRemoteUpdate = true;
+    Object.keys(incoming).forEach(k => { DB[k] = incoming[k]; });
+    applyingRemoteUpdate = false;
+    // Jangan menimpa layar saat pengguna sedang mengetik di form/modal,
+    // supaya data yang sedang diisi tidak ikut ter-reset oleh data masuk perangkat lain.
+    const busy = !STATE.currentUser || (STATE.dokumen.view==='form') || (STATE.pengguna.view==='form') || !!STATE.modal;
+    if(!busy) render();
+  }, function(err){
+    console.error('Firestore error:', err);
+    setSyncStatus('error', err.message || String(err));
+  });
 }
 function scheduleSync(){
-  if(!backendEnabled()) return;
+  if(!firestoreEnabled() || applyingRemoteUpdate) return;
   clearTimeout(syncTimer);
-  syncTimer = setTimeout(pushStateToBackend, 400); // debounce ringan
+  syncTimer = setTimeout(pushStateToFirestore, 400); // debounce ringan
 }
-async function pushStateToBackend(){
-  const result = await backendCall('saveState', {db:DB});
-  if(result && result.db) lastKnownStateJSON = JSON.stringify(result.db);
-}
-async function pullStateFromBackend(){
-  const result = await backendCall('getState', {});
-  if(!result || !result.db) return;
-  const incoming = JSON.stringify(result.db);
-  if(incoming === lastKnownStateJSON) return; // tidak ada perubahan dari perangkat lain
-  lastKnownStateJSON = incoming;
-  Object.keys(result.db).forEach(k => { DB[k] = result.db[k]; });
-  // Jangan menimpa layar saat pengguna sedang mengetik di form/modal,
-  // supaya data yang sedang diisi tidak ikut ter-reset oleh data masuk dari perangkat lain.
-  const busy = !STATE.currentUser || (STATE.dokumen.view==='form') || (STATE.pengguna.view==='form') || !!STATE.modal;
-  if(!busy) render();
-}
-function startRealtimeSync(){
-  if(!backendEnabled()) return;
-  setInterval(pullStateFromBackend, CONFIG.POLL_MS);
+async function pushStateToFirestore(){
+  if(!fsDocRef) return;
+  try{
+    await fsDocRef.set({ db: DB, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+    setSyncStatus('ok');
+  }catch(err){
+    console.error('Gagal menyimpan ke Firestore:', err);
+    setSyncStatus('error', err.message || String(err));
+  }
 }
 async function bootstrap(){
-  if(backendEnabled()){
-    const result = await backendCall('getState', {});
-    if(result && result.db){
-      Object.keys(result.db).forEach(k => { DB[k] = result.db[k]; });
-      lastKnownStateJSON = JSON.stringify(result.db);
+  if(firestoreEnabled()){
+    initFirestore();
+    try{
+      const snap = await fsDocRef.get();
+      if(snap.exists && snap.data().db){
+        const incoming = snap.data().db;
+        Object.keys(incoming).forEach(k => { DB[k] = incoming[k]; });
+      }
+    }catch(err){
+      console.error('Gagal memuat data awal dari Firestore:', err);
+      setSyncStatus('error', err.message || String(err));
     }
   }
   render();
-  startRealtimeSync();
 }
-/* Unggah satu berkas langsung ke folder Google Drive area terkait lewat backend. */
-async function uploadFileToDrive(areaId, fileData){
-  if(!backendEnabled() || !fileData) return null;
-  return await backendCall('uploadFile', {
-    areaId, fileName: fileData.name, mimeType: fileData.mime, base64: fileData.base64
+
+/* ---------------- Google Drive: OAuth + unggah berkas langsung dari browser ---------------- */
+let driveTokenClient = null;
+let driveAccessToken = null;
+let driveTokenExpiry = 0;
+
+function ensureDriveTokenClient(){
+  if(!driveEnabled() || typeof google === 'undefined' || !google.accounts) return null;
+  if(!driveTokenClient){
+    driveTokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: CONFIG.GOOGLE_DRIVE_CLIENT_ID,
+      scope: DRIVE_SCOPE,
+      callback: () => {}, // diganti per-permintaan lewat requestDriveAccessToken()
+    });
+  }
+  return driveTokenClient;
+}
+function requestDriveAccessToken(){
+  return new Promise((resolve, reject) => {
+    const client = ensureDriveTokenClient();
+    if(!client){ reject(new Error('Google Identity Services belum siap. Periksa koneksi internet.')); return; }
+    if(driveAccessToken && Date.now() < driveTokenExpiry){ resolve(driveAccessToken); return; }
+    client.callback = (resp) => {
+      if(resp.error){ reject(new Error(resp.error)); return; }
+      driveAccessToken = resp.access_token;
+      driveTokenExpiry = Date.now() + (Number(resp.expires_in||3300) * 1000) - 60000;
+      resolve(driveAccessToken);
+    };
+    client.requestAccessToken({ prompt: driveAccessToken ? '' : 'consent' });
   });
+}
+function extractDriveFolderId(url){
+  if(!url) return null;
+  const m = String(url).match(/\/folders\/([a-zA-Z0-9_-]+)/);
+  return m ? m[1] : null;
+}
+/* Unggah satu berkas ke folder Google Drive area terkait, langsung dari browser. */
+async function uploadFileToDrive(areaId, fileData){
+  if(!driveEnabled() || !fileData) return null;
+  const folderId = extractDriveFolderId(driveFolderUrl(areaId)) || extractDriveFolderId(DRIVE_BASE_URL);
+  const token = await requestDriveAccessToken();
+  const metadata = { name: fileData.name, parents: folderId ? [folderId] : undefined };
+  const boundary = '-------dimas' + uid('b');
+  const body =
+    `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(metadata)}\r\n` +
+    `--${boundary}\r\nContent-Type: ${fileData.mime}\r\nContent-Transfer-Encoding: base64\r\n\r\n${fileData.base64}\r\n` +
+    `--${boundary}--`;
+  const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink', {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': `multipart/related; boundary=${boundary}` },
+    body
+  });
+  const data = await res.json();
+  if(!res.ok) throw new Error((data.error && data.error.message) || 'Gagal mengunggah ke Google Drive.');
+  return { fileId: data.id, fileName: data.name, webViewLink: data.webViewLink };
 }
 
 function uid(prefix){return prefix+'_'+Math.random().toString(36).slice(2,9);}
@@ -1103,7 +1200,7 @@ async function saveDokumen(e){
   // unggah dulu berkasnya ke folder Drive area yang bersangkutan sebelum menyimpan data.
   let uploadedFileName = STATE.dokumen.tempFile || '';
   let uploadedDriveLink = null;
-  if(STATE.dokumen.tempFileData && backendEnabled()){
+  if(STATE.dokumen.tempFileData && driveEnabled()){
     if(submitBtn){ submitBtn.disabled=true; submitBtn.textContent='Mengunggah berkas...'; }
     const progWrap=document.getElementById('fFileProgress');
     if(progWrap) progWrap.innerHTML = `<div class="field-hint">Mengunggah ke folder Google Drive area ${esc(areaName(area))}...</div>`;
@@ -1116,7 +1213,7 @@ async function saveDokumen(e){
     uploadedFileName = uploaded.fileName || uploadedFileName;
     uploadedDriveLink = uploaded.webViewLink || null;
     if(progWrap) progWrap.innerHTML = '';
-  } else if(STATE.dokumen.tempFileData && !backendEnabled()){
+  } else if(STATE.dokumen.tempFileData && !driveEnabled()){
     // Backend belum dikonfigurasi: berkas hanya dicatat namanya (mode demo lokal),
     // belum benar-benar tersimpan ke Google Drive.
     console.warn('CONFIG.BACKEND_URL belum diisi — berkas tidak diunggah ke Drive, hanya nama berkas yang dicatat.');
