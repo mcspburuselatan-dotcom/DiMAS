@@ -411,12 +411,98 @@ const STATE = {
   loginError:'',
   showLoginPw:false,
   dashboard:{year:2026, area:'all'},
-  dokumen:{search:'', area:'all', status:'all', view:'list', editingId:null, tempFile:''},
+  dokumen:{search:'', area:'all', status:'all', view:'list', editingId:null, tempFile:'', tempFileData:null, draft:null},
   laporan:{area:'all', year:2026},
   pengguna:{view:'list', editingId:null, revealed:{}},
   riwayat:{search:''},
   modal:null,
 };
+
+/* ============================================================
+   SINKRONISASI BACKEND (Google Apps Script + Google Drive)
+   ------------------------------------------------------------
+   Isi CONFIG.BACKEND_URL dengan URL Web App Apps Script setelah
+   Anda men-deploy file "apps-script-backend.gs" yang disertakan.
+   Selama BACKEND_URL kosong, aplikasi tetap berjalan seperti biasa
+   secara lokal (tanpa penyimpanan permanen / tanpa sinkron lintas
+   perangkat) — jadi file ini tetap aman dibuka langsung di browser.
+   ============================================================ */
+const CONFIG = {
+  BACKEND_URL: '', // <-- tempel URL Web App Apps Script di sini
+  POLL_MS: 4000,   // seberapa sering menarik data terbaru dari perangkat lain
+};
+function backendEnabled(){ return !!CONFIG.BACKEND_URL; }
+
+let lastKnownStateJSON = '';
+let syncTimer = null;
+
+async function backendCall(action, payload){
+  if(!backendEnabled()) return null;
+  try{
+    const res = await fetch(CONFIG.BACKEND_URL, {
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'}, // text/plain menghindari CORS preflight di Apps Script
+      body: JSON.stringify({action, payload})
+    });
+    const data = await res.json();
+    if(!data.ok) throw new Error(data.error || 'Gagal memproses permintaan di server.');
+    setSyncStatus('ok');
+    return data.result;
+  }catch(err){
+    console.error('Backend error:', err);
+    setSyncStatus('error', err.message || String(err));
+    return null;
+  }
+}
+function setSyncStatus(kind, msg){
+  const el = document.getElementById('syncStatus');
+  if(!el) return;
+  if(kind==='ok') el.innerHTML = '';
+  else el.innerHTML = `<span title="${esc(msg||'')}" style="color:var(--danger); font-size:11px;">${ICONS.alert} Sinkron gagal</span>`;
+}
+function scheduleSync(){
+  if(!backendEnabled()) return;
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(pushStateToBackend, 400); // debounce ringan
+}
+async function pushStateToBackend(){
+  const result = await backendCall('saveState', {db:DB});
+  if(result && result.db) lastKnownStateJSON = JSON.stringify(result.db);
+}
+async function pullStateFromBackend(){
+  const result = await backendCall('getState', {});
+  if(!result || !result.db) return;
+  const incoming = JSON.stringify(result.db);
+  if(incoming === lastKnownStateJSON) return; // tidak ada perubahan dari perangkat lain
+  lastKnownStateJSON = incoming;
+  Object.keys(result.db).forEach(k => { DB[k] = result.db[k]; });
+  // Jangan menimpa layar saat pengguna sedang mengetik di form/modal,
+  // supaya data yang sedang diisi tidak ikut ter-reset oleh data masuk dari perangkat lain.
+  const busy = !STATE.currentUser || (STATE.dokumen.view==='form') || (STATE.pengguna.view==='form') || !!STATE.modal;
+  if(!busy) render();
+}
+function startRealtimeSync(){
+  if(!backendEnabled()) return;
+  setInterval(pullStateFromBackend, CONFIG.POLL_MS);
+}
+async function bootstrap(){
+  if(backendEnabled()){
+    const result = await backendCall('getState', {});
+    if(result && result.db){
+      Object.keys(result.db).forEach(k => { DB[k] = result.db[k]; });
+      lastKnownStateJSON = JSON.stringify(result.db);
+    }
+  }
+  render();
+  startRealtimeSync();
+}
+/* Unggah satu berkas langsung ke folder Google Drive area terkait lewat backend. */
+async function uploadFileToDrive(areaId, fileData){
+  if(!backendEnabled() || !fileData) return null;
+  return await backendCall('uploadFile', {
+    areaId, fileName: fileData.name, mimeType: fileData.mime, base64: fileData.base64
+  });
+}
 
 function uid(prefix){return prefix+'_'+Math.random().toString(36).slice(2,9);}
 function todayStr(){
@@ -445,6 +531,7 @@ function initials(name){
 }
 function logAct(aksi, detail){
   DB.activity.unshift({id:uid('a'), waktu:nowStr(), user:STATE.currentUser?STATE.currentUser.name:'-', aksi, detail});
+  scheduleSync(); // setiap aksi yang tercatat di sini juga otomatis dikirim ke backend
 }
 function visibleDocuments(){
   const u=STATE.currentUser;
@@ -505,7 +592,7 @@ function renderLogin(){
           <label>Password</label>
           <div class="pw-wrap">
             <input type="${STATE.showLoginPw?'text':'password'}" id="loginPassword" placeholder="Masukkan password" autocomplete="current-password" required>
-            <button type="button" class="pw-toggle" onclick="STATE.showLoginPw=!STATE.showLoginPw; render();">${STATE.showLoginPw?ICONS.eyeOff:ICONS.eye}</button>
+            <button type="button" class="pw-toggle" id="loginPwToggle" onclick="toggleLoginPw()">${STATE.showLoginPw?ICONS.eyeOff:ICONS.eye}</button>
           </div>
         </div>
         <button type="submit" class="btn btn-primary btn-block" style="margin-top:6px; padding:11px;">Masuk</button>
@@ -518,6 +605,19 @@ function renderLogin(){
   </div>`;
 }
 
+function toggleLoginPw(){
+  // Ubah jenis input & ikon langsung lewat DOM, TANPA memanggil render(),
+  // supaya username/password yang sudah diketik pengguna tidak ikut hilang.
+  const input = document.getElementById('loginPassword');
+  const btn = document.getElementById('loginPwToggle');
+  if(!input || !btn) return;
+  STATE.showLoginPw = !STATE.showLoginPw;
+  input.type = STATE.showLoginPw ? 'text' : 'password';
+  btn.innerHTML = STATE.showLoginPw ? ICONS.eyeOff : ICONS.eye;
+  input.focus();
+  const val = input.value;
+  input.value = ''; input.value = val; // pastikan kursor tetap di akhir teks
+}
 function doLogin(e){
   e.preventDefault();
   const username=document.getElementById('loginUsername').value.trim();
@@ -599,6 +699,7 @@ function renderShell(){
           <div class="breadcrumb">DiMAS / ${pageInfo.label}</div>
         </div>
         <div class="topbar-spacer"></div>
+        <span id="syncStatus"></span>
         <div class="topbar-user">
           <span><b>${esc(u.name)}</b></span>
           <span class="badge-role ${admin?'admin':'user'}">${admin?'ADMIN UTAMA':'PENGGUNA'}</span>
@@ -842,12 +943,22 @@ function openDokumenForm(id){
   STATE.dokumen.view='form';
   STATE.dokumen.editingId=id;
   STATE.dokumen.tempFile='';
+  STATE.dokumen.tempFileData=null;
+  STATE.dokumen.draft=null;
   render();
 }
 function closeDokumenForm(){
   STATE.dokumen.view='list';
   STATE.dokumen.editingId=null;
+  STATE.dokumen.draft=null;
   render();
+}
+// Simpan nilai field yang sedang diketik ke STATE sebagai jaring pengaman,
+// agar walau terjadi render() (mis. sinkronisasi data dari perangkat lain),
+// apa yang sudah diisi pengguna tidak hilang.
+function draftField(key, val){
+  if(!STATE.dokumen.draft) STATE.dokumen.draft={};
+  STATE.dokumen.draft[key]=val;
 }
 function confirmDeleteDoc(id){
   const doc = DB.documents.find(d=>d.id===id);
@@ -870,8 +981,13 @@ function dokumenFormView(){
   const admin=isAdmin(u);
   const editing = STATE.dokumen.editingId ? DB.documents.find(d=>d.id===STATE.dokumen.editingId) : null;
   const myAreas = accessibleAreas(u);
-  const areaOptions = myAreas.map(a=>`<option value="${a.id}" ${editing?(editing.area===a.id?'selected':''):''}>${esc(a.name)}</option>`).join('');
-  const yearOptions = YEARS.map(y=>`<option value="${y}" ${editing?(editing.tahun===y?'selected':''):(y===2026?'selected':'')}>${y}</option>`).join('');
+  const d = STATE.dokumen.draft || {};
+  const curArea = d.area!=null ? d.area : (editing ? editing.area : '');
+  const curTahun = d.tahun!=null ? d.tahun : (editing ? editing.tahun : 2026);
+  const curNama = d.nama!=null ? d.nama : (editing ? editing.namaDokumen : '');
+  const curLink = d.link!=null ? d.link : (editing ? (editing.driveLink||'') : driveFolderUrl(editing?editing.area:(myAreas[0]?myAreas[0].id:'')));
+  const areaOptions = myAreas.map(a=>`<option value="${a.id}" ${curArea===a.id?'selected':''}>${esc(a.name)}</option>`).join('');
+  const yearOptions = YEARS.map(y=>`<option value="${y}" ${curTahun===y?'selected':''}>${y}</option>`).join('');
   const picName = editing ? (getUser(editing.picUserId)?.name || u.name) : u.name;
   const fileName = STATE.dokumen.tempFile || (editing ? editing.fileName : '');
 
@@ -881,7 +997,7 @@ function dokumenFormView(){
     <form onsubmit="return saveDokumen(event)">
       <div class="field">
         <label>Area MCSP</label>
-        <select id="fArea" required>${areaOptions}</select>
+        <select id="fArea" required oninput="draftField('area', this.value)">${areaOptions}</select>
       </div>
       <div class="form-row">
         <div class="field">
@@ -890,12 +1006,12 @@ function dokumenFormView(){
         </div>
         <div class="field">
           <label>Tahun</label>
-          <select id="fTahun" required>${yearOptions}</select>
+          <select id="fTahun" required oninput="draftField('tahun', parseInt(this.value))">${yearOptions}</select>
         </div>
       </div>
       <div class="field">
         <label>Nama Dokumen</label>
-        <input type="text" id="fNama" placeholder="Contoh: Laporan Realisasi Anggaran Triwulan I" value="${editing?esc(editing.namaDokumen):''}" required>
+        <input type="text" id="fNama" placeholder="Contoh: Laporan Realisasi Anggaran Triwulan I" value="${esc(curNama)}" required oninput="draftField('nama', this.value)">
       </div>
       <div class="field">
         <label>PIC (Penanggung Jawab)</label>
@@ -909,13 +1025,14 @@ function dokumenFormView(){
           <span style="font-size:11px;">PDF, DOCX, XLSX, JPG &middot; maks. 20MB</span>
         </label>
         <input type="file" id="fFile" style="display:none" onchange="onFilePick(this)">
-        ${fileName ? `<div class="file-chip">${ICONS.file} ${esc(fileName)}</div>` : ''}
+        <div id="fFileChip">${fileName ? `<div class="file-chip">${ICONS.file} ${esc(fileName)}</div>` : ''}</div>
+        <div id="fFileProgress"></div>
       </div>
       ${admin ? `
       <div class="field">
         <label>Keterangan (Link Penyimpanan Google Drive)</label>
         <div style="display:flex; gap:8px;">
-          <input type="text" id="fLink" style="flex:1;" placeholder="${esc(DRIVE_BASE_URL)}" value="${editing?esc(editing.driveLink||''):esc(driveFolderUrl(editing?editing.area:(myAreas[0]?myAreas[0].id:'')))}">
+          <input type="text" id="fLink" style="flex:1;" placeholder="${esc(DRIVE_BASE_URL)}" value="${esc(curLink)}" oninput="draftField('link', this.value)">
           <button type="button" class="btn btn-outline btn-sm" onclick="useAreaFolderLink()">${ICONS.folder} Folder Area</button>
         </div>
         <div class="field-hint">${ICONS.lock} Dokumen ini otomatis diarahkan ke folder Google Drive sesuai Area MCSP yang dipilih di atas (akun ${DRIVE_ACCOUNT}). Kolom ini hanya dapat dilihat oleh Admin Utama.</div>
@@ -931,18 +1048,47 @@ function dokumenFormView(){
   `;
 }
 function onFilePick(input){
-  if(input.files && input.files[0]){
-    STATE.dokumen.tempFile = input.files[0].name;
-    render();
+  if(!(input.files && input.files[0])) return;
+  const file = input.files[0];
+  const MAX_MB = 20;
+  if(file.size > MAX_MB*1024*1024){
+    alert('Ukuran berkas maksimal '+MAX_MB+'MB.');
+    input.value='';
+    return;
   }
+  STATE.dokumen.tempFile = file.name;
+  STATE.dokumen.tempFileData = null; // diisi setelah base64 siap
+  // Tampilkan chip nama berkas + status "membaca berkas" TANPA render() penuh,
+  // supaya Nama Dokumen, Area, Tahun, dll yang sudah diketik tidak ikut ter-reset.
+  const chipWrap = document.getElementById('fFileChip');
+  const progWrap = document.getElementById('fFileProgress');
+  if(chipWrap) chipWrap.innerHTML = `<div class="file-chip">${ICONS.file} ${esc(file.name)}</div>`;
+  if(progWrap) progWrap.innerHTML = `<div class="field-hint">Menyiapkan berkas untuk diunggah...</div>`;
+
+  const reader = new FileReader();
+  reader.onload = function(){
+    // Simpan sebagai base64 murni (tanpa prefix data:...;base64,)
+    const base64 = String(reader.result).split(',')[1] || '';
+    STATE.dokumen.tempFileData = {name:file.name, mime:file.type||'application/octet-stream', base64};
+    if(progWrap) progWrap.innerHTML = '';
+  };
+  reader.onerror = function(){
+    if(progWrap) progWrap.innerHTML = `<div class="field-hint" style="color:var(--danger);">Gagal membaca berkas, silakan coba lagi.</div>`;
+  };
+  reader.readAsDataURL(file);
 }
 function useAreaFolderLink(){
   const areaEl=document.getElementById('fArea');
   const linkEl=document.getElementById('fLink');
-  if(areaEl && linkEl) linkEl.value = driveFolderUrl(areaEl.value);
+  if(areaEl && linkEl){
+    linkEl.value = driveFolderUrl(areaEl.value);
+    draftField('link', linkEl.value);
+  }
 }
-function saveDokumen(e){
+async function saveDokumen(e){
   e.preventDefault();
+  const form = e.target;
+  const submitBtn = form.querySelector('button[type=submit]');
   const u=STATE.currentUser;
   const admin=isAdmin(u);
   const area=document.getElementById('fArea').value;
@@ -953,16 +1099,40 @@ function saveDokumen(e){
   const link= linkEl ? (linkEl.value.trim() || driveFolderUrl(area)) : undefined;
   const editing = STATE.dokumen.editingId ? DB.documents.find(d=>d.id===STATE.dokumen.editingId) : null;
 
+  // Jika ada berkas baru yang dipilih dan backend Google Drive sudah dikonfigurasi,
+  // unggah dulu berkasnya ke folder Drive area yang bersangkutan sebelum menyimpan data.
+  let uploadedFileName = STATE.dokumen.tempFile || '';
+  let uploadedDriveLink = null;
+  if(STATE.dokumen.tempFileData && backendEnabled()){
+    if(submitBtn){ submitBtn.disabled=true; submitBtn.textContent='Mengunggah berkas...'; }
+    const progWrap=document.getElementById('fFileProgress');
+    if(progWrap) progWrap.innerHTML = `<div class="field-hint">Mengunggah ke folder Google Drive area ${esc(areaName(area))}...</div>`;
+    const uploaded = await uploadFileToDrive(area, STATE.dokumen.tempFileData);
+    if(!uploaded){
+      if(submitBtn){ submitBtn.disabled=false; submitBtn.innerHTML=`${ICONS.check} Simpan Dokumen`; }
+      if(progWrap) progWrap.innerHTML = `<div class="field-hint" style="color:var(--danger);">Gagal mengunggah berkas ke Google Drive. Periksa koneksi lalu coba lagi.</div>`;
+      return false;
+    }
+    uploadedFileName = uploaded.fileName || uploadedFileName;
+    uploadedDriveLink = uploaded.webViewLink || null;
+    if(progWrap) progWrap.innerHTML = '';
+  } else if(STATE.dokumen.tempFileData && !backendEnabled()){
+    // Backend belum dikonfigurasi: berkas hanya dicatat namanya (mode demo lokal),
+    // belum benar-benar tersimpan ke Google Drive.
+    console.warn('CONFIG.BACKEND_URL belum diisi — berkas tidak diunggah ke Drive, hanya nama berkas yang dicatat.');
+  }
+
   if(editing){
     editing.area=area; editing.tahun=tahun; editing.namaDokumen=nama;
-    if(STATE.dokumen.tempFile) editing.fileName=STATE.dokumen.tempFile;
-    if(admin && link!==undefined) editing.driveLink=link;
-    else if(!admin) editing.driveLink=driveFolderUrl(area);
+    if(uploadedFileName) editing.fileName=uploadedFileName;
+    if(admin && link!==undefined) editing.driveLink = uploadedDriveLink || link;
+    else if(!admin) editing.driveLink = uploadedDriveLink || driveFolderUrl(area);
     logAct('Edit Dokumen', 'Memperbarui dokumen "'+nama+'" ('+areaName(area)+')');
   } else {
     const newDoc = {
       id:uid('d'), area, tahun, namaDokumen:nama, tanggalUpload:todayStr(),
-      picUserId:u.id, fileName:STATE.dokumen.tempFile||'', driveLink: admin?(link||driveFolderUrl(area)):driveFolderUrl(area),
+      picUserId:u.id, fileName:uploadedFileName,
+      driveLink: uploadedDriveLink || (admin?(link||driveFolderUrl(area)):driveFolderUrl(area)),
       status:'Belum Lengkap', catatan:''
     };
     DB.documents.push(newDoc);
@@ -971,6 +1141,8 @@ function saveDokumen(e){
   STATE.dokumen.view='list';
   STATE.dokumen.editingId=null;
   STATE.dokumen.tempFile='';
+  STATE.dokumen.tempFileData=null;
+  STATE.dokumen.draft=null;
   render();
   return false;
 }
@@ -1518,7 +1690,7 @@ function render(){
   root.innerHTML = STATE.currentUser ? renderShell() : renderLogin();
 }
 window.addEventListener('resize', ()=>{ /* keep layout responsive without forcing re-render loops */ });
-render();
+bootstrap();
 </script>
 </body>
 </html>
