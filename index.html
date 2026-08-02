@@ -321,7 +321,7 @@ const DRIVE_ACCOUNT = 'mcspburuselatan@gmail.com';
 function areaOf(id){return AREAS.find(a=>a.id===id);}
 function areaName(id){const a=areaOf(id); return a?a.name:id;}
 function areaColor(id){const a=areaOf(id); return a?a.color:'#888';}
-function driveFolderUrl(areaId, year){return 'https://drive.google.com/drive/folders/MCSP-'+areaId+'-'+year;}
+function driveFolderUrl(areaId, year){return 'https://drive.google.com/drive/folders/1kqOe9wv5uY45goXNviZ3mMfv7dQyucVK?usp=drive_link'+areaId+'-'+year;}
 
 const DB = {
   users:[
@@ -882,7 +882,7 @@ function dokumenFormView(){
       ${admin ? `
       <div class="field">
         <label>Keterangan (Link Penyimpanan Google Drive)</label>
-        <input type="text" id="fLink" placeholder="https://drive.google.com/..." value="${editing?esc(editing.driveLink||''):''}">
+        <input type="text" id="fLink" placeholder="https://drive.google.com/drive/folders/1kqOe9wv5uY45goXNviZ3mMfv7dQyucVK?usp=drive_link" value="${editing?esc(editing.driveLink||''):''}">
         <div class="field-hint">${ICONS.lock} Kolom ini hanya dapat dilihat oleh Admin Utama, tidak ditampilkan kepada pengguna.</div>
       </div>` : `
       <div class="alert alert-info" style="margin-bottom:16px;">${ICONS.info}<span>Link penyimpanan dokumen di Google Drive akan dikelola oleh Admin Utama dan tidak ditampilkan di akun Anda.</span></div>
