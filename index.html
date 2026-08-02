@@ -1,1865 +1,1332 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DiMAS - Digitalisasi MCSP Arsip Sistem</title>
-    
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: {
-                            50: '#eef2ff',
-                            100: '#e0e7ff',
-                            500: '#6366f1',
-                            600: '#4f46e5',
-                            700: '#4338ca',
-                            800: '#3730a3',
-                        },
-                        secondary: {
-                            50: '#f8fafc',
-                            100: '#f1f5f9',
-                            500: '#64748b',
-                            700: '#334155',
-                        }
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    }
-                }
-            }
-        }
-    </script>
-    
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f8fafc;
-            color: #1e293b;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DiMAS - Digitalisasi MCSP Arsip Sistem</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#16274A;
+  --navy-light:#1F3A63;
+  --navy-lighter:#2C4E80;
+  --gold:#C9972F;
+  --gold-dark:#A8791E;
+  --gold-bg:#FBF1DD;
+  --bg:#F3F5F9;
+  --surface:#FFFFFF;
+  --border:#E2E6ED;
+  --border-strong:#CBD2DE;
+  --text-primary:#182238;
+  --text-secondary:#5B6472;
+  --text-muted:#8A93A3;
+  --success:#2E7D5B;
+  --success-bg:#E5F3EC;
+  --danger:#B3432B;
+  --danger-bg:#FBEAE5;
+  --info:#2C6E9B;
+  --info-bg:#E7F1F8;
+  --radius:10px;
+  --shadow:0 1px 2px rgba(22,39,74,0.06), 0 1px 8px rgba(22,39,74,0.05);
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+body{
+  font-family:'Inter',sans-serif;
+  background:var(--bg);
+  color:var(--text-primary);
+  font-size:14px;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4,.font-display{font-family:'Plus Jakarta Sans',sans-serif;}
+a{color:inherit;}
+button{font-family:inherit; cursor:pointer;}
+input,select,textarea{font-family:inherit; font-size:14px;}
+::selection{background:var(--gold-bg); color:var(--navy);}
 
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: #f1f5f9;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
+/* ---------- LOGIN ---------- */
+.login-wrap{
+  min-height:100vh; display:flex; align-items:center; justify-content:center;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(201,151,47,0.10), transparent 40%),
+    radial-gradient(circle at 85% 80%, rgba(31,58,99,0.12), transparent 45%),
+    var(--navy);
+  padding:20px;
+}
+.login-card{
+  width:100%; max-width:380px; background:var(--surface); border-radius:16px;
+  padding:36px 32px 32px; box-shadow:0 20px 60px rgba(0,0,0,0.35);
+}
+.login-logo{
+  width:52px; height:52px; border-radius:12px; background:var(--navy);
+  display:flex; align-items:center; justify-content:center; margin-bottom:18px;
+  color:var(--gold); font-family:'Plus Jakarta Sans'; font-weight:800; font-size:20px;
+}
+.login-card h1{font-size:22px; font-weight:700; color:var(--navy); margin-bottom:4px;}
+.login-card p.sub{color:var(--text-secondary); font-size:13px; margin-bottom:26px;}
+.field{margin-bottom:16px;}
+.field label{display:block; font-size:12.5px; font-weight:600; color:var(--text-secondary); margin-bottom:6px; letter-spacing:.2px;}
+.field input, .field select, .field textarea{
+  width:100%; padding:10px 12px; border:1px solid var(--border-strong); border-radius:8px;
+  background:#fff; color:var(--text-primary); outline:none; transition:border-color .15s, box-shadow .15s;
+}
+.field input:focus, .field select:focus, .field textarea:focus{
+  border-color:var(--navy-lighter); box-shadow:0 0 0 3px rgba(31,58,99,0.12);
+}
+.field-hint{font-size:11.5px; color:var(--text-muted); margin-top:5px;}
+.pw-wrap{position:relative;}
+.pw-wrap input{padding-right:38px;}
+.pw-toggle{position:absolute; right:8px; top:50%; transform:translateY(-50%); background:none; border:none; color:var(--text-muted); padding:4px;}
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:6px;
+  padding:10px 16px; border-radius:8px; border:1px solid transparent; font-weight:600; font-size:13.5px;
+  transition:all .15s; white-space:nowrap;
+}
+.btn-primary{background:var(--navy); color:#fff;}
+.btn-primary:hover{background:var(--navy-light);}
+.btn-gold{background:var(--gold); color:#3A2A05;}
+.btn-gold:hover{background:var(--gold-dark); color:#fff;}
+.btn-outline{background:#fff; border-color:var(--border-strong); color:var(--text-primary);}
+.btn-outline:hover{background:var(--bg); border-color:var(--navy-lighter);}
+.btn-danger-outline{background:#fff; border-color:#E4B7AA; color:var(--danger);}
+.btn-danger-outline:hover{background:var(--danger-bg);}
+.btn-block{width:100%;}
+.btn-sm{padding:6px 10px; font-size:12.5px; border-radius:7px;}
+.btn-icon{padding:7px; border-radius:7px;}
+.btn:disabled{opacity:.45; cursor:not-allowed;}
+.login-error{
+  background:var(--danger-bg); color:var(--danger); font-size:12.5px; padding:9px 12px;
+  border-radius:8px; margin-bottom:16px; display:flex; gap:8px; align-items:flex-start;
+}
+.login-hint-box{
+  margin-top:22px; padding:12px 14px; background:var(--bg); border-radius:10px; border:1px dashed var(--border-strong);
+  font-size:11.5px; color:var(--text-secondary); line-height:1.6;
+}
+.login-hint-box b{color:var(--text-primary);}
 
-        /* Printable Report specific styles */
-        @media print {
-            body * {
-                visibility: hidden;
-            }
-            #printArea, #printArea * {
-                visibility: visible;
-            }
-            #printArea {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
-                padding: 20px;
-                background: white;
-            }
-            .no-print {
-                display: none !important;
-            }
-        }
-    </style>
+/* ---------- APP SHELL ---------- */
+.app{display:flex; min-height:100vh;}
+.sidebar{
+  width:260px; background:var(--navy); color:#fff; flex-shrink:0;
+  display:flex; flex-direction:column; position:fixed; top:0; left:0; bottom:0; z-index:40;
+  transition:transform .22s ease;
+}
+.sidebar.closed{transform:translateX(-100%);}
+.sidebar-head{padding:20px 20px 16px; display:flex; align-items:center; gap:11px; border-bottom:1px solid rgba(255,255,255,0.08);}
+.sidebar-logo{width:38px; height:38px; border-radius:9px; background:var(--gold); color:var(--navy); display:flex; align-items:center; justify-content:center; font-family:'Plus Jakarta Sans'; font-weight:800; font-size:15px; flex-shrink:0;}
+.sidebar-head .name{font-family:'Plus Jakarta Sans'; font-weight:700; font-size:15.5px; line-height:1.2;}
+.sidebar-head .tag{font-size:10.5px; color:rgba(255,255,255,0.55); letter-spacing:.3px; margin-top:2px;}
+.sidebar-nav{flex:1; padding:14px 12px; overflow-y:auto;}
+.nav-item{
+  display:flex; align-items:center; gap:11px; padding:10px 12px; border-radius:8px; color:rgba(255,255,255,0.72);
+  font-weight:500; font-size:13.8px; margin-bottom:3px; cursor:pointer; transition:background .15s, color .15s; border:none; background:none; width:100%; text-align:left;
+}
+.nav-item:hover{background:rgba(255,255,255,0.06); color:#fff;}
+.nav-item.active{background:var(--gold); color:#3A2A05; font-weight:700;}
+.nav-item svg{flex-shrink:0;}
+.sidebar-foot{padding:14px 20px 20px; border-top:1px solid rgba(255,255,255,0.08);}
+.user-chip{display:flex; align-items:center; gap:10px; margin-bottom:12px;}
+.user-avatar{width:34px; height:34px; border-radius:50%; background:var(--navy-lighter); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; color:#fff; flex-shrink:0;}
+.user-chip .uname{font-size:13px; font-weight:600; color:#fff; line-height:1.2;}
+.user-chip .urole{font-size:11px; color:rgba(255,255,255,0.55);}
+.logout-btn{width:100%; padding:8px 10px; border-radius:8px; background:rgba(255,255,255,0.08); color:#fff; border:none; font-size:12.5px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:6px;}
+.logout-btn:hover{background:rgba(255,255,255,0.16);}
+
+.overlay{position:fixed; inset:0; background:rgba(10,16,30,0.45); z-index:35; display:none;}
+.overlay.show{display:block;}
+
+.main{flex:1; margin-left:260px; display:flex; flex-direction:column; min-height:100vh; transition:margin .22s ease;}
+.main.full{margin-left:0;}
+.topbar{
+  height:60px; background:#fff; border-bottom:1px solid var(--border); display:flex; align-items:center;
+  padding:0 22px; gap:14px; position:sticky; top:0; z-index:20;
+}
+.hamburger{background:none; border:1px solid var(--border-strong); border-radius:8px; padding:8px; display:flex; color:var(--text-primary);}
+.hamburger:hover{background:var(--bg);}
+.topbar h2{font-size:16.5px; font-weight:700; color:var(--navy);}
+.topbar .breadcrumb{font-size:11.5px; color:var(--text-muted); margin-top:1px;}
+.topbar-spacer{flex:1;}
+.topbar-user{display:flex; align-items:center; gap:9px; font-size:12.5px; color:var(--text-secondary); padding-left:14px; border-left:1px solid var(--border);}
+.topbar-user b{color:var(--text-primary);}
+.badge-role{font-size:10px; font-weight:700; padding:2px 7px; border-radius:20px; letter-spacing:.3px;}
+.badge-role.admin{background:var(--gold-bg); color:var(--gold-dark);}
+.badge-role.user{background:var(--info-bg); color:var(--info);}
+
+.content{padding:24px; flex:1;}
+.page-title{font-size:20px; font-weight:700; color:var(--navy); margin-bottom:2px;}
+.page-desc{font-size:13px; color:var(--text-secondary); margin-bottom:20px;}
+
+/* ---------- CARDS / GRID ---------- */
+.card{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow);}
+.card-pad{padding:18px 20px;}
+.grid{display:grid; gap:16px;}
+.grid-4{grid-template-columns:repeat(4,1fr);}
+.grid-3{grid-template-columns:repeat(3,1fr);}
+.grid-2{grid-template-columns:repeat(2,1fr);}
+@media(max-width:1100px){.grid-4{grid-template-columns:repeat(2,1fr);} .grid-3{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:640px){.grid-4,.grid-3,.grid-2{grid-template-columns:1fr;}}
+
+.stat-card{padding:16px 18px;}
+.stat-label{font-size:11.5px; color:var(--text-secondary); font-weight:600; text-transform:uppercase; letter-spacing:.3px; margin-bottom:8px;}
+.stat-value{font-size:26px; font-weight:800; font-family:'Plus Jakarta Sans'; color:var(--navy);}
+.stat-sub{font-size:11.5px; color:var(--text-muted); margin-top:4px;}
+.stat-icon{width:34px; height:34px; border-radius:9px; display:flex; align-items:center; justify-content:center; margin-bottom:10px;}
+
+.toolbar{display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:16px;}
+.toolbar .grow{flex:1; min-width:180px;}
+.search-box{position:relative;}
+.search-box svg{position:absolute; left:11px; top:50%; transform:translateY(-50%); color:var(--text-muted);}
+.search-box input{padding-left:34px;}
+
+table{width:100%; border-collapse:collapse; font-size:13px;}
+thead th{
+  text-align:left; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.3px;
+  color:var(--text-secondary); padding:10px 12px; border-bottom:2px solid var(--border); background:#FAFBFD; white-space:nowrap;
+}
+tbody td{padding:11px 12px; border-bottom:1px solid var(--border); vertical-align:middle;}
+tbody tr:hover{background:#FAFBFD;}
+.table-wrap{overflow-x:auto; border-radius:var(--radius); border:1px solid var(--border); background:#fff;}
+.table-wrap table{border:none;}
+.table-wrap thead th:first-child{border-top-left-radius:var(--radius);}
+.table-empty{text-align:center; padding:40px 20px; color:var(--text-muted);}
+
+.pill{display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:20px; font-size:11.5px; font-weight:700;}
+.pill-success{background:var(--success-bg); color:var(--success);}
+.pill-danger{background:var(--danger-bg); color:var(--danger);}
+.pill-muted{background:var(--bg); color:var(--text-secondary); border:1px solid var(--border-strong);}
+.pill-area{background:#EEF1F7; color:var(--navy); font-weight:600; font-size:11px;}
+.pill-lock{background:var(--bg); color:var(--text-muted); font-size:11px; font-weight:600;}
+
+.area-card{
+  border:1px solid var(--border); border-radius:12px; padding:15px 16px; background:#fff; cursor:pointer;
+  border-left:4px solid var(--c); transition:box-shadow .15s, transform .15s;
+}
+.area-card:hover{box-shadow:var(--shadow); transform:translateY(-1px);}
+.area-card.active{box-shadow:0 0 0 2px var(--c) inset; background:#FAFBFD;}
+.area-card .an{font-weight:700; font-size:13px; color:var(--text-primary); margin-bottom:10px; line-height:1.3; min-height:34px;}
+.area-card .arow{display:flex; align-items:center; justify-content:space-between;}
+.area-card .acount{font-size:20px; font-weight:800; font-family:'Plus Jakarta Sans'; color:var(--navy);}
+.area-card .apct{font-size:12px; font-weight:700;}
+.bar-track{height:6px; border-radius:4px; background:var(--border); margin-top:8px; overflow:hidden;}
+.bar-fill{height:100%; border-radius:4px;}
+
+.ring{width:96px; height:96px; border-radius:50%; display:flex; align-items:center; justify-content:center; position:relative; flex-shrink:0;}
+.ring-inner{width:70px; height:70px; border-radius:50%; background:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center;}
+.ring-inner b{font-size:18px; font-family:'Plus Jakarta Sans'; color:var(--navy);}
+.ring-inner span{font-size:9.5px; color:var(--text-muted); font-weight:600;}
+
+.section-title{font-size:14.5px; font-weight:700; color:var(--navy); margin:26px 0 12px; display:flex; align-items:center; gap:8px;}
+.section-title:first-child{margin-top:0;}
+
+.chip{display:inline-flex; align-items:center; padding:3px 9px; border-radius:6px; background:var(--bg); border:1px solid var(--border-strong); font-size:11px; font-weight:600; color:var(--text-secondary); margin:2px 3px 2px 0;}
+
+/* ---------- FORMS / MODAL ---------- */
+.modal-overlay{position:fixed; inset:0; background:rgba(10,16,30,0.5); z-index:60; display:flex; align-items:flex-start; justify-content:center; padding:36px 16px; overflow-y:auto;}
+.modal-box{background:#fff; border-radius:14px; width:100%; max-width:560px; box-shadow:0 24px 70px rgba(0,0,0,0.3); animation:modalIn .15s ease;}
+@keyframes modalIn{from{opacity:0; transform:translateY(-8px);} to{opacity:1; transform:translateY(0);}}
+.modal-head{padding:18px 22px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between;}
+.modal-head h3{font-size:16px; font-weight:700; color:var(--navy);}
+.modal-close{background:none; border:none; color:var(--text-muted); padding:5px; border-radius:6px;}
+.modal-close:hover{background:var(--bg); color:var(--text-primary);}
+.modal-body{padding:20px 22px; max-height:70vh; overflow-y:auto;}
+.modal-foot{padding:16px 22px; border-top:1px solid var(--border); display:flex; justify-content:flex-end; gap:10px;}
+.form-row{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+@media(max-width:520px){.form-row{grid-template-columns:1fr;}}
+.check-grid{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
+@media(max-width:480px){.check-grid{grid-template-columns:1fr;}}
+.check-item{display:flex; align-items:center; gap:8px; padding:8px 10px; border:1px solid var(--border-strong); border-radius:8px; font-size:12.5px;}
+.check-item input{width:auto;}
+.alert{padding:10px 13px; border-radius:8px; font-size:12.5px; display:flex; gap:9px; align-items:flex-start; line-height:1.5;}
+.alert-info{background:var(--info-bg); color:#1D4E70;}
+.alert-warn{background:var(--danger-bg); color:var(--danger);}
+.alert-gold{background:var(--gold-bg); color:#6B4E0F;}
+.locked-field{background:var(--bg); padding:10px 12px; border-radius:8px; border:1px solid var(--border); font-size:13px; color:var(--text-secondary); display:flex; align-items:center; gap:8px;}
+.file-drop{border:1.5px dashed var(--border-strong); border-radius:10px; padding:18px; text-align:center; color:var(--text-secondary); font-size:12.5px; cursor:pointer;}
+.file-drop:hover{border-color:var(--navy-lighter); background:#FAFBFD;}
+.file-chip{display:inline-flex; align-items:center; gap:7px; background:var(--info-bg); color:#1D4E70; padding:6px 11px; border-radius:8px; font-size:12px; font-weight:600; margin-top:8px;}
+
+.empty-state{text-align:center; padding:50px 20px; color:var(--text-muted);}
+.empty-state svg{margin-bottom:12px; opacity:.5;}
+.empty-state h4{color:var(--text-secondary); font-size:14px; margin-bottom:4px;}
+.empty-state p{font-size:12.5px;}
+
+.eye-btn{background:none; border:none; color:var(--text-muted); padding:3px; display:inline-flex; vertical-align:middle;}
+.eye-btn:hover{color:var(--navy);}
+.mono{font-family:monospace; letter-spacing:.5px;}
+
+.filter-note{font-size:11.5px; color:var(--text-muted); margin-bottom:14px; display:flex; align-items:center; gap:6px;}
+
+/* Laporan bars */
+.rep-bar-row{display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid var(--border);}
+.rep-bar-row:last-child{border-bottom:none;}
+.rep-bar-label{width:220px; flex-shrink:0; font-size:12.5px; font-weight:600;}
+.rep-bar-track{flex:1; height:16px; background:var(--bg); border-radius:5px; overflow:hidden; position:relative;}
+.rep-bar-fill{height:100%; border-radius:5px; display:flex; align-items:center; justify-content:flex-end; transition:width .3s;}
+.rep-bar-num{width:90px; text-align:right; font-size:12px; font-weight:700; color:var(--text-secondary); flex-shrink:0;}
+
+/* Print */
+#reportPrintArea{display:none;}
+@media print{
+  body *{visibility:hidden;}
+  #reportPrintArea, #reportPrintArea *{visibility:visible;}
+  #reportPrintArea{display:block !important; position:absolute; left:0; top:0; width:100%; padding:20px;}
+  .no-print{display:none !important;}
+}
+
+@media(max-width:900px){
+  .sidebar{transform:translateX(-100%);}
+  .sidebar.open{transform:translateX(0);}
+  .main{margin-left:0;}
+}
+.scroll-x{overflow-x:auto;}
+</style>
 </head>
-<body class="bg-slate-50 text-slate-800 antialiased overflow-x-hidden">
+<body>
+<div id="root"></div>
 
-    <!-- Toast Notification Container -->
-    <div id="toastContainer" class="fixed top-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none"></div>
+<script>
+/* ============================================================
+   DATA MODEL
+   ============================================================ */
+const AREAS = [
+  {id:'apbd', name:'Perencanaan dan Penganggaran APBD', color:'#2C6E9B'},
+  {id:'pbj', name:'Pengadaan Barang dan Jasa', color:'#C9972F'},
+  {id:'yanpublik', name:'Pelayanan Publik', color:'#2E7D5B'},
+  {id:'asn', name:'Manajemen ASN', color:'#7B4FA0'},
+  {id:'bmd', name:'Barang Milik Daerah', color:'#B3432B'},
+  {id:'pad', name:'Optimalisasi Penerimaan Daerah', color:'#0E7C7B'},
+  {id:'apip', name:'Penguatan APIP', color:'#16274A'},
+];
 
-    <!-- LOGIN SCREEN -->
-    <div id="loginView" class="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-indigo-50 via-slate-50 to-blue-100">
-        <div class="bg-white rounded-2xl shadow-xl border border-slate-100 max-w-md w-full p-8 relative overflow-hidden">
-            <div class="absolute -top-12 -right-12 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl"></div>
-            <div class="absolute -bottom-12 -left-12 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl"></div>
+const ORGANISASI = [
+  'Inspektorat',
+  'Badan Perencanaan Pembangunan Daerah (BAPPEDA)',
+  'Badan Keuangan dan Aset Daerah (BKAD)',
+  'Badan Kepegawaian dan Pengembangan Sumber Daya Manusia (BKPSDM)',
+  'Badan Pendapatan Daerah (Bapenda)',
+  'Bagian Pengadaan Barang dan Jasa (PBJ) Setda',
+  'Dinas Penanaman Modal dan Pelayanan Terpadu Satu Pintu (DPMPTSP)',
+  'Dinas Kependudukan dan Pencatatan Sipil (Dukcapil)',
+  'Dinas Kesehatan',
+  'Dinas Pendidikan',
+  'Dinas Pekerjaan Umum dan Penataan Ruang (PUPR)',
+  'Dinas Perhubungan',
+  'Dinas Pariwisata'
+];
 
-            <div class="text-center mb-8 relative z-10">
-                <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-indigo-600 text-white shadow-lg shadow-indigo-200 mb-4">
-                    <i class="fa-solid fa-folder-tree text-2xl"></i>
-                </div>
-                <h1 class="text-2xl font-bold text-slate-800 tracking-tight">DiMAS</h1>
-                <p class="text-xs font-semibold text-indigo-600 tracking-widest uppercase mt-0.5">Digitalisasi MCSP Arsip Sistem</p>
-                <p class="text-xs text-slate-500 mt-2">Silahkan masuk ke akun Anda untuk melanjutkan</p>
-            </div>
+const YEARS = Array.from({length:10}, (_,i)=>2026+i);
+const DRIVE_ACCOUNT = 'mcspburuselatan@gmail.com';
 
-            <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-5 relative z-10">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">Username</label>
-                    <div class="relative">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
-                            <i class="fa-solid fa-user text-sm"></i>
-                        </span>
-                        <input type="text" id="loginUsername" required placeholder="Masukkan username"
-                            class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition">
-                    </div>
-                </div>
+function areaOf(id){return AREAS.find(a=>a.id===id);}
+function areaName(id){const a=areaOf(id); return a?a.name:id;}
+function areaColor(id){const a=areaOf(id); return a?a.color:'#888';}
+function driveFolderUrl(areaId, year){return 'https://drive.google.com/drive/folders/MCSP-'+areaId+'-'+year;}
 
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">Kata Sandi</label>
-                    <div class="relative">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
-                            <i class="fa-solid fa-lock text-sm"></i>
-                        </span>
-                        <input type="password" id="loginPassword" required placeholder="••••••••"
-                            class="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition">
-                        <button type="button" onclick="togglePasswordVisibility('loginPassword', 'loginPasswordIcon')" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600">
-                            <i id="loginPasswordIcon" class="fa-solid fa-eye text-sm"></i>
-                        </button>
-                    </div>
-                </div>
+const DB = {
+  users:[
+    {id:'u1', username:'anasyantik', password:'123anas', name:'Anas Yantik', role:'admin', organisasi:'Inspektorat', areas: AREAS.map(a=>a.id)},
+    {id:'u2', username:'rudi.bappeda', password:'bappeda2026', name:'Rudi Hartono', role:'user', organisasi:'Badan Perencanaan Pembangunan Daerah (BAPPEDA)', areas:['apbd']},
+    {id:'u3', username:'sari.bkad', password:'bkad2026', name:'Sari Wulandari', role:'user', organisasi:'Badan Keuangan dan Aset Daerah (BKAD)', areas:['apbd','bmd']},
+    {id:'u4', username:'fajar.pbj', password:'pbj2026', name:'Fajar Ramadhan', role:'user', organisasi:'Bagian Pengadaan Barang dan Jasa (PBJ) Setda', areas:['pbj']},
+    {id:'u5', username:'maya.dpmptsp', password:'dpmptsp2026', name:'Maya Kusuma', role:'user', organisasi:'Dinas Penanaman Modal dan Pelayanan Terpadu Satu Pintu (DPMPTSP)', areas:['yanpublik']},
+    {id:'u6', username:'galih.bkpsdm', password:'bkpsdm2026', name:'Galih Prasetyo', role:'user', organisasi:'Badan Kepegawaian dan Pengembangan Sumber Daya Manusia (BKPSDM)', areas:['asn']},
+    {id:'u7', username:'intan.bapenda', password:'bapenda2026', name:'Intan Permatasari', role:'user', organisasi:'Badan Pendapatan Daerah (Bapenda)', areas:['pad']},
+    {id:'u8', username:'yusuf.itwil', password:'itwil2026', name:'Yusuf Setiawan', role:'user', organisasi:'Inspektorat', areas:['apip']},
+  ],
+  documents:[
+    {id:'d1', area:'apbd', tahun:2026, namaDokumen:'KUA-PPAS APBD 2026', tanggalUpload:'12/01/2026', picUserId:'u2', fileName:'kua-ppas-2026.pdf', driveLink:driveFolderUrl('apbd',2026)+'/kua-ppas.pdf', status:'Lengkap', catatan:''},
+    {id:'d2', area:'apbd', tahun:2026, namaDokumen:'Nota Kesepakatan KUA-PPAS', tanggalUpload:'15/01/2026', picUserId:'u2', fileName:'nota-kesepakatan.pdf', driveLink:driveFolderUrl('apbd',2026)+'/nota-kesepakatan.pdf', status:'Belum Lengkap', catatan:'Lampiran tanda tangan DPRD belum tersedia, mohon dilengkapi.'},
+    {id:'d3', area:'apbd', tahun:2026, namaDokumen:'Perda APBD 2026', tanggalUpload:'20/01/2026', picUserId:'u3', fileName:'perda-apbd-2026.pdf', driveLink:driveFolderUrl('apbd',2026)+'/perda.pdf', status:'Lengkap', catatan:''},
+    {id:'d4', area:'bmd', tahun:2026, namaDokumen:'Laporan Inventarisasi Aset 2026', tanggalUpload:'10/02/2026', picUserId:'u3', fileName:'inventarisasi-aset.xlsx', driveLink:driveFolderUrl('bmd',2026)+'/inventarisasi.xlsx', status:'Belum Lengkap', catatan:'Data aset kecamatan belum direkap seluruhnya.'},
+    {id:'d5', area:'bmd', tahun:2026, namaDokumen:'SK Penghapusan Aset', tanggalUpload:'18/02/2026', picUserId:'u3', fileName:'sk-penghapusan.pdf', driveLink:driveFolderUrl('bmd',2026)+'/sk-penghapusan.pdf', status:'Lengkap', catatan:''},
+    {id:'d6', area:'pbj', tahun:2026, namaDokumen:'Rencana Umum Pengadaan 2026', tanggalUpload:'05/01/2026', picUserId:'u4', fileName:'rup-2026.pdf', driveLink:driveFolderUrl('pbj',2026)+'/rup.pdf', status:'Lengkap', catatan:''},
+    {id:'d7', area:'pbj', tahun:2026, namaDokumen:'Kontrak Pengadaan Barang Q1', tanggalUpload:'22/02/2026', picUserId:'u4', fileName:'kontrak-q1.pdf', driveLink:driveFolderUrl('pbj',2026)+'/kontrak-q1.pdf', status:'Belum Lengkap', catatan:'Kwitansi pembayaran termin 2 belum diunggah.'},
+    {id:'d8', area:'yanpublik', tahun:2026, namaDokumen:'SOP Pelayanan Perizinan', tanggalUpload:'08/01/2026', picUserId:'u5', fileName:'sop-perizinan.pdf', driveLink:driveFolderUrl('yanpublik',2026)+'/sop.pdf', status:'Lengkap', catatan:''},
+    {id:'d9', area:'yanpublik', tahun:2026, namaDokumen:'Survei Kepuasan Masyarakat Triwulan I', tanggalUpload:'25/03/2026', picUserId:'u5', fileName:'skm-tw1.pdf', driveLink:driveFolderUrl('yanpublik',2026)+'/skm-tw1.pdf', status:'Lengkap', catatan:''},
+    {id:'d10', area:'asn', tahun:2026, namaDokumen:'Peta Jabatan ASN 2026', tanggalUpload:'14/01/2026', picUserId:'u6', fileName:'peta-jabatan.xlsx', driveLink:driveFolderUrl('asn',2026)+'/peta-jabatan.xlsx', status:'Lengkap', catatan:''},
+    {id:'d11', area:'asn', tahun:2026, namaDokumen:'Laporan Diklat Kepegawaian', tanggalUpload:'02/03/2026', picUserId:'u6', fileName:'laporan-diklat.pdf', driveLink:driveFolderUrl('asn',2026)+'/diklat.pdf', status:'Belum Lengkap', catatan:'Sertifikat peserta belum lengkap untuk 3 nama.'},
+    {id:'d12', area:'pad', tahun:2026, namaDokumen:'Target dan Realisasi PAD Tahun 2026', tanggalUpload:'11/01/2026', picUserId:'u7', fileName:'target-realisasi-pad.xlsx', driveLink:driveFolderUrl('pad',2026)+'/pad.xlsx', status:'Lengkap', catatan:''},
+    {id:'d13', area:'pad', tahun:2026, namaDokumen:'Kajian Potensi Pajak Daerah', tanggalUpload:'19/02/2026', picUserId:'u7', fileName:'kajian-pajak.pdf', driveLink:driveFolderUrl('pad',2026)+'/kajian-pajak.pdf', status:'Belum Lengkap', catatan:'Ringkasan eksekutif belum disertakan.'},
+    {id:'d14', area:'apip', tahun:2026, namaDokumen:'PKPT Inspektorat 2026', tanggalUpload:'06/01/2026', picUserId:'u8', fileName:'pkpt-2026.pdf', driveLink:driveFolderUrl('apip',2026)+'/pkpt.pdf', status:'Lengkap', catatan:''},
+    {id:'d15', area:'apip', tahun:2026, namaDokumen:'Laporan Pemantauan Tindak Lanjut', tanggalUpload:'28/02/2026', picUserId:'u8', fileName:'tindak-lanjut.pdf', driveLink:driveFolderUrl('apip',2026)+'/tindak-lanjut.pdf', status:'Lengkap', catatan:''},
+  ],
+  targets:{
+    2026:{apbd:20, pbj:20, yanpublik:20, asn:20, bmd:20, pad:20, apip:20}
+  },
+  activity:[
+    {id:'a1', waktu:'02/01/2026 08:12', user:'Anas Yantik', aksi:'Login', detail:'Masuk ke sistem sebagai Admin Utama'},
+    {id:'a2', waktu:'05/01/2026 09:40', user:'Fajar Ramadhan', aksi:'Tambah Dokumen', detail:'Menambahkan dokumen "Rencana Umum Pengadaan 2026"'},
+    {id:'a3', waktu:'20/01/2026 14:05', user:'Anas Yantik', aksi:'Ubah Status', detail:'Menandai "Perda APBD 2026" sebagai Lengkap'},
+  ]
+};
 
-                <button type="submit" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl shadow-lg shadow-indigo-600/20 transition duration-200 flex items-center justify-center gap-2">
-                    <span>Masuk Sistem</span>
-                    <i class="fa-solid fa-arrow-right text-sm"></i>
-                </button>
-            </form>
+function getTarget(year, areaId){
+  if(DB.targets[year] && DB.targets[year][areaId]!=null) return DB.targets[year][areaId];
+  return 20;
+}
+function setTarget(year, areaId, value){
+  if(!DB.targets[year]) DB.targets[year]={};
+  DB.targets[year][areaId]=value;
+}
 
-            <!-- Quick Demo Users Panel -->
-         
+/* ============================================================
+   STATE
+   ============================================================ */
+const STATE = {
+  currentUser:null,
+  page:'dashboard',
+  sidebarOpen: window.innerWidth>900,
+  loginError:'',
+  showLoginPw:false,
+  dashboard:{year:2026, area:'all'},
+  dokumen:{search:'', area:'all', status:'all', view:'list', editingId:null, tempFile:''},
+  laporan:{area:'all', year:2026},
+  pengguna:{view:'list', editingId:null, revealed:{}},
+  riwayat:{search:''},
+  modal:null,
+};
+
+function uid(prefix){return prefix+'_'+Math.random().toString(36).slice(2,9);}
+function todayStr(){
+  const d=new Date();
+  const p=n=>String(n).padStart(2,'0');
+  return p(d.getDate())+'/'+p(d.getMonth()+1)+'/'+d.getFullYear();
+}
+function nowStr(){
+  const d=new Date();
+  const p=n=>String(n).padStart(2,'0');
+  return p(d.getDate())+'/'+p(d.getMonth()+1)+'/'+d.getFullYear()+' '+p(d.getHours())+':'+p(d.getMinutes());
+}
+function esc(s){
+  if(s==null) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function getUser(id){return DB.users.find(u=>u.id===id);}
+function isAdmin(u){return u && u.role==='admin';}
+function accessibleAreas(u){
+  if(!u) return [];
+  if(isAdmin(u)) return AREAS;
+  return AREAS.filter(a=>u.areas.includes(a.id));
+}
+function initials(name){
+  return (name||'?').split(' ').filter(Boolean).slice(0,2).map(w=>w[0].toUpperCase()).join('');
+}
+function logAct(aksi, detail){
+  DB.activity.unshift({id:uid('a'), waktu:nowStr(), user:STATE.currentUser?STATE.currentUser.name:'-', aksi, detail});
+}
+function visibleDocuments(){
+  const u=STATE.currentUser;
+  if(!u) return [];
+  const areaIds = accessibleAreas(u).map(a=>a.id);
+  let docs = DB.documents.filter(d=>areaIds.includes(d.area));
+  if(!isAdmin(u)) docs = docs.filter(d=>d.picUserId===u.id);
+  return docs;
+}
+
+/* ============================================================
+   ICONS
+   ============================================================ */
+const ICONS = {
+  menu:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>',
+  dashboard:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>',
+  doc:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>',
+  report:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12" y="8" width="3" height="10"/><rect x="17" y="5" width="3" height="13"/></svg>',
+  users:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+  history:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13a9 9 0 1 0 2.13-6.36L3 8"/><path d="M12 7v5l4 2"/></svg>',
+  logout:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>',
+  search:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>',
+  eye:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
+  eyeOff:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a18.5 18.5 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>',
+  plus:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',
+  edit:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4z"/></svg>',
+  trash:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>',
+  lock:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>',
+  link:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>',
+  folder:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>',
+  download:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
+  upload:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>',
+  file:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>',
+  x:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
+  info:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>',
+  alert:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+  check:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+  building:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v18"/><path d="M2 22h20"/><path d="M9 7h1M14 7h1M9 11h1M14 11h1M9 15h1M14 15h1"/></svg>',
+};
+
+/* ============================================================
+   RENDER: LOGIN
+   ============================================================ */
+function renderLogin(){
+  return `
+  <div class="login-wrap">
+    <div class="login-card">
+      <div class="login-logo">DM</div>
+      <h1>DiMAS</h1>
+      <p class="sub">Digitalisasi MCSP Arsip Sistem</p>
+      ${STATE.loginError ? `<div class="login-error">${ICONS.alert}<span>${esc(STATE.loginError)}</span></div>` : ''}
+      <form onsubmit="return doLogin(event)">
+        <div class="field">
+          <label>Username</label>
+          <input type="text" id="loginUsername" placeholder="Masukkan username" autocomplete="username" required>
         </div>
+        <div class="field">
+          <label>Password</label>
+          <div class="pw-wrap">
+            <input type="${STATE.showLoginPw?'text':'password'}" id="loginPassword" placeholder="Masukkan password" autocomplete="current-password" required>
+            <button type="button" class="pw-toggle" onclick="STATE.showLoginPw=!STATE.showLoginPw; render();">${STATE.showLoginPw?ICONS.eyeOff:ICONS.eye}</button>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block" style="margin-top:6px; padding:11px;">Masuk</button>
+      </form>
+      <div class="login-hint-box">
+        <b>Akun Admin Utama (Inspektorat):</b><br>
+        Username: <span class="mono">anasyantik</span> &nbsp; Password: <span class="mono">123anas</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+function doLogin(e){
+  e.preventDefault();
+  const username=document.getElementById('loginUsername').value.trim();
+  const password=document.getElementById('loginPassword').value;
+  const user = DB.users.find(u=>u.username===username && u.password===password);
+  if(!user){
+    STATE.loginError = 'Username atau password salah. Silakan coba lagi.';
+    render();
+    return false;
+  }
+  STATE.loginError='';
+  STATE.currentUser = user;
+  STATE.page='dashboard';
+  STATE.dashboard.year=2026;
+  STATE.dashboard.area = isAdmin(user) ? 'all' : (user.areas[0]||'all');
+  logAct('Login', 'Masuk ke sistem sebagai '+(isAdmin(user)?'Admin Utama':'Pengguna'));
+  render();
+  return false;
+}
+function doLogout(){
+  logAct('Logout', 'Keluar dari sistem');
+  STATE.currentUser=null;
+  STATE.page='dashboard';
+  render();
+}
+
+/* ============================================================
+   RENDER: SHELL
+   ============================================================ */
+const MENUS = [
+  {key:'dashboard', label:'Dashboard', icon:ICONS.dashboard, adminOnly:false},
+  {key:'dokumen', label:'Data Dokumen', icon:ICONS.doc, adminOnly:false},
+  {key:'laporan', label:'Laporan', icon:ICONS.report, adminOnly:false},
+  {key:'pengguna', label:'Pengguna', icon:ICONS.users, adminOnly:true},
+  {key:'riwayat', label:'Riwayat Aktivitas', icon:ICONS.history, adminOnly:true},
+];
+
+function renderShell(){
+  const u=STATE.currentUser;
+  const admin=isAdmin(u);
+  const menus = MENUS.filter(m=>!m.adminOnly || admin);
+  const pageInfo = MENUS.find(m=>m.key===STATE.page) || MENUS[0];
+
+  const navHtml = menus.map(m=>`
+    <button class="nav-item ${STATE.page===m.key?'active':''}" onclick="goPage('${m.key}')">
+      ${m.icon}<span>${m.label}</span>
+    </button>`).join('');
+
+  const sidebarClass = window.innerWidth>900 ? (STATE.sidebarOpen?'':'closed') : (STATE.sidebarOpen?'open':'');
+
+  return `
+  <div class="app">
+    <div class="overlay ${STATE.sidebarOpen && window.innerWidth<=900 ?'show':''}" onclick="toggleSidebar()"></div>
+    <aside class="sidebar ${sidebarClass}">
+      <div class="sidebar-head">
+        <div class="sidebar-logo">DM</div>
+        <div>
+          <div class="name">DiMAS</div>
+          <div class="tag">MCSP ARSIP SISTEM</div>
+        </div>
+      </div>
+      <nav class="sidebar-nav">${navHtml}</nav>
+      <div class="sidebar-foot">
+        <div class="user-chip">
+          <div class="user-avatar">${initials(u.name)}</div>
+          <div>
+            <div class="uname">${esc(u.name)}</div>
+            <div class="urole">${admin?'Admin Utama':esc(u.organisasi)}</div>
+          </div>
+        </div>
+        <button class="logout-btn" onclick="doLogout()">${ICONS.logout} Keluar</button>
+      </div>
+    </aside>
+    <div class="main ${window.innerWidth>900 && !STATE.sidebarOpen ? 'full':''}">
+      <header class="topbar">
+        <button class="hamburger" onclick="toggleSidebar()">${ICONS.menu}</button>
+        <div>
+          <h2>${pageInfo.label}</h2>
+          <div class="breadcrumb">DiMAS / ${pageInfo.label}</div>
+        </div>
+        <div class="topbar-spacer"></div>
+        <div class="topbar-user">
+          <span><b>${esc(u.name)}</b></span>
+          <span class="badge-role ${admin?'admin':'user'}">${admin?'ADMIN UTAMA':'PENGGUNA'}</span>
+        </div>
+      </header>
+      <main class="content">
+        ${renderPage()}
+      </main>
+    </div>
+  </div>
+  ${STATE.modal ? renderModal() : ''}
+  `;
+}
+
+function toggleSidebar(){STATE.sidebarOpen=!STATE.sidebarOpen; render();}
+function goPage(key){
+  STATE.page=key;
+  if(key==='dokumen'){STATE.dokumen.view='list';}
+  if(window.innerWidth<=900) STATE.sidebarOpen=false;
+  render();
+}
+
+function renderPage(){
+  switch(STATE.page){
+    case 'dashboard': return pageDashboard();
+    case 'dokumen': return pageDokumen();
+    case 'laporan': return pageLaporan();
+    case 'pengguna': return isAdmin(STATE.currentUser) ? pagePengguna() : pageForbidden();
+    case 'riwayat': return isAdmin(STATE.currentUser) ? pageRiwayat() : pageForbidden();
+    default: return pageDashboard();
+  }
+}
+function pageForbidden(){
+  return `<div class="empty-state">${ICONS.lock}<h4>Akses terbatas</h4><p>Halaman ini hanya dapat diakses oleh Admin Utama.</p></div>`;
+}
+
+/* ============================================================
+   PAGE: DASHBOARD
+   ============================================================ */
+function pageDashboard(){
+  const u=STATE.currentUser;
+  const admin=isAdmin(u);
+  const myAreas = accessibleAreas(u);
+  const year = STATE.dashboard.year;
+  const areaSel = STATE.dashboard.area;
+
+  const yearOptions = YEARS.map(y=>`<option value="${y}" ${y===year?'selected':''}>${y}</option>`).join('');
+  const areaOptions = `<option value="all">Semua Area</option>` + myAreas.map(a=>`<option value="${a.id}" ${a.id===areaSel?'selected':''}>${esc(a.name)}</option>`).join('');
+
+  // scope docs: role-based visibility + selected year
+  let docsAll = DB.documents.filter(d=>d.tahun===year && myAreas.some(a=>a.id===d.area));
+  if(!admin) docsAll = docsAll.filter(d=>d.picUserId===u.id);
+
+  const scopedDocs = areaSel==='all' ? docsAll : docsAll.filter(d=>d.area===areaSel);
+  const total = scopedDocs.length;
+  const lengkap = scopedDocs.filter(d=>d.status==='Lengkap').length;
+  const belum = total-lengkap;
+  const target = areaSel==='all' ? myAreas.reduce((s,a)=>s+getTarget(year,a.id),0) : getTarget(year,areaSel);
+  const pct = total>0 ? Math.round(lengkap/total*100) : 0;
+  const targetPct = target>0 ? Math.min(100, Math.round(total/target*100)) : 0;
+
+  const areaCardsHtml = myAreas.map(a=>{
+    let ad = docsAll.filter(d=>d.area===a.id);
+    const at=ad.length, al=ad.filter(d=>d.status==='Lengkap').length;
+    const ap = at>0?Math.round(al/at*100):0;
+    return `
+    <div class="area-card ${areaSel===a.id?'active':''}" style="--c:${a.color}" onclick="setDashArea('${a.id}')">
+      <div class="an">${esc(a.name)}</div>
+      <div class="arow">
+        <div class="acount">${at}</div>
+        <div class="apct" style="color:${a.color}">${ap}% lengkap</div>
+      </div>
+      <div class="bar-track"><div class="bar-fill" style="width:${ap}%; background:${a.color}"></div></div>
+    </div>`;
+  }).join('');
+
+  return `
+  <div class="page-desc">${admin?'Ringkasan seluruh area MCSP se-Pemerintah Daerah.':'Ringkasan area MCSP yang menjadi tanggung jawab '+esc(u.organisasi)+'.'}</div>
+
+  <div class="toolbar">
+    <div class="field" style="margin-bottom:0; min-width:140px;">
+      <label>Tahun</label>
+      <select onchange="STATE.dashboard.year=parseInt(this.value); render();">${yearOptions}</select>
+    </div>
+    <div class="field" style="margin-bottom:0; min-width:240px;">
+      <label>Area MCSP</label>
+      <select onchange="STATE.dashboard.area=this.value; render();">${areaOptions}</select>
+    </div>
+  </div>
+
+  <div class="grid grid-4" style="margin-bottom:8px;">
+    <div class="card stat-card">
+      <div class="stat-icon" style="background:var(--info-bg); color:var(--info);">${ICONS.doc}</div>
+      <div class="stat-label">Total Dokumen</div>
+      <div class="stat-value">${total}</div>
+      <div class="stat-sub">Tahun ${year} ${areaSel==='all'?'&middot; semua area':'&middot; '+esc(areaName(areaSel))}</div>
+    </div>
+    <div class="card stat-card">
+      <div class="stat-icon" style="background:var(--success-bg); color:var(--success);">${ICONS.check}</div>
+      <div class="stat-label">Dokumen Lengkap</div>
+      <div class="stat-value">${lengkap}</div>
+      <div class="stat-sub">${pct}% dari dokumen terinput</div>
+    </div>
+    <div class="card stat-card">
+      <div class="stat-icon" style="background:var(--danger-bg); color:var(--danger);">${ICONS.alert}</div>
+      <div class="stat-label">Belum Lengkap</div>
+      <div class="stat-value">${belum}</div>
+      <div class="stat-sub">Perlu tindak lanjut</div>
+    </div>
+    <div class="card stat-card">
+      <div class="stat-icon" style="background:var(--gold-bg); color:var(--gold-dark);">${ICONS.report}</div>
+      <div class="stat-label">Realisasi vs Target</div>
+      <div class="stat-value">${total}/${target}</div>
+      <div class="stat-sub">${targetPct}% dari target ${year}</div>
+    </div>
+  </div>
+
+  <div class="card card-pad" style="margin-bottom:22px; display:flex; align-items:center; gap:22px; flex-wrap:wrap;">
+    <div class="ring" style="background:conic-gradient(var(--success) 0% ${pct}%, var(--border) ${pct}% 100%);">
+      <div class="ring-inner"><b>${pct}%</b><span>LENGKAP</span></div>
+    </div>
+    <div style="flex:1; min-width:220px;">
+      <div style="font-weight:700; color:var(--navy); font-size:14px; margin-bottom:4px;">Status Kelengkapan Dokumen</div>
+      <div style="font-size:12.5px; color:var(--text-secondary); line-height:1.6;">
+        Dari ${total} dokumen yang terinput pada tahun ${year}, <b style="color:var(--success)">${lengkap} dokumen</b> telah dinyatakan lengkap oleh Admin Utama dan <b style="color:var(--danger)">${belum} dokumen</b> masih memerlukan kelengkapan berkas.
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">${ICONS.dashboard} Ringkasan per Area MCSP</div>
+  <div class="grid grid-3">${areaCardsHtml || '<div class="empty-state">Tidak ada area yang dapat ditampilkan.</div>'}</div>
+  `;
+}
+function setDashArea(id){
+  STATE.dashboard.area = (STATE.dashboard.area===id) ? 'all' : id;
+  render();
+}
+
+/* ============================================================
+   PAGE: DATA DOKUMEN
+   ============================================================ */
+function pageDokumen(){
+  if(STATE.dokumen.view==='form') return dokumenFormView();
+  const u=STATE.currentUser;
+  const admin=isAdmin(u);
+  const myAreas = accessibleAreas(u);
+  const f = STATE.dokumen;
+
+  let docs = visibleDocuments();
+  if(f.area!=='all') docs = docs.filter(d=>d.area===f.area);
+  if(f.status!=='all') docs = docs.filter(d=>d.status===f.status);
+  if(f.search.trim()){
+    const q=f.search.trim().toLowerCase();
+    docs = docs.filter(d=> d.namaDokumen.toLowerCase().includes(q) || (getUser(d.picUserId)?.name||'').toLowerCase().includes(q));
+  }
+  docs = docs.slice().sort((x,y)=> y.tahun-x.tahun || y.id.localeCompare(x.id));
+
+  const areaOptions = `<option value="all">Semua Area</option>` + myAreas.map(a=>`<option value="${a.id}" ${f.area===a.id?'selected':''}>${esc(a.name)}</option>`).join('');
+
+  const driveCard = (admin && f.area!=='all') ? `
+    <div class="card card-pad" style="margin-bottom:16px; display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
+      <div class="stat-icon" style="background:var(--info-bg); color:var(--info); margin:0;">${ICONS.folder}</div>
+      <div style="flex:1; min-width:200px;">
+        <div style="font-weight:700; font-size:13px; color:var(--navy);">Folder Google Drive &mdash; ${esc(areaName(f.area))}</div>
+        <div style="font-size:11.5px; color:var(--text-muted);">Terhubung ke akun ${DRIVE_ACCOUNT} &middot; hanya terlihat oleh Admin Utama</div>
+      </div>
+      <a class="btn btn-outline btn-sm" href="${driveFolderUrl(f.area, STATE.dashboard.year||2026)}" target="_blank" rel="noopener">${ICONS.link} Buka Folder Drive</a>
+    </div>` : '';
+
+  const rows = docs.map((d,i)=>{
+    const pic = getUser(d.picUserId);
+    const canEditRow = admin || d.picUserId===u.id;
+    const statusPill = d.status==='Lengkap'
+      ? `<span class="pill pill-success">${ICONS.check} Lengkap</span>`
+      : `<span class="pill pill-danger">${ICONS.alert} Belum Lengkap</span>`;
+    const statusCell = admin
+      ? `<button class="btn btn-outline btn-sm" onclick="openStatusModal('${d.id}')">${statusPill}</button>`
+      : statusPill;
+    const catatanCell = d.catatan ? `<span style="color:var(--danger); font-size:12px;">${esc(d.catatan)}</span>` : `<span style="color:var(--text-muted); font-size:12px;">&mdash;</span>`;
+    const linkCell = admin
+      ? (d.driveLink ? `<a href="${esc(d.driveLink)}" target="_blank" rel="noopener" class="btn btn-outline btn-sm">${ICONS.link} Lihat</a>` : `<span style="color:var(--text-muted); font-size:12px;">&mdash;</span>`)
+      : `<span class="pill pill-lock">${ICONS.lock} Admin</span>`;
+    return `
+    <tr>
+      <td>${i+1}</td>
+      <td>
+        <div style="font-weight:600;">${esc(d.namaDokumen)}</div>
+        <div style="font-size:11px; color:var(--text-muted); display:flex; align-items:center; gap:4px; margin-top:2px;">${ICONS.file} ${esc(d.fileName||'Belum ada berkas')}</div>
+      </td>
+      <td><span class="pill pill-area" style="border-left:3px solid ${areaColor(d.area)}; padding-left:7px;">${esc(areaName(d.area))}</span></td>
+      <td>${d.tahun}</td>
+      <td>${d.tanggalUpload}</td>
+      <td>${esc(pic?pic.name:'-')}</td>
+      <td>${statusCell}</td>
+      <td style="max-width:180px;">${catatanCell}</td>
+      ${admin ? `<td>${linkCell}</td>` : ''}
+      <td>
+        <div style="display:flex; gap:6px;">
+          ${canEditRow ? `<button class="btn btn-icon btn-outline" title="Edit" onclick="openDokumenForm('${d.id}')">${ICONS.edit}</button>` : ''}
+          ${canEditRow ? `<button class="btn btn-icon btn-danger-outline" title="Hapus" onclick="confirmDeleteDoc('${d.id}')">${ICONS.trash}</button>` : ''}
+          ${!canEditRow ? `<span class="pill pill-lock">${ICONS.lock}</span>` : ''}
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+
+  return `
+  <div class="page-desc">${admin ? 'Seluruh dokumen arsip MCSP dari semua area dan organisasi perangkat daerah.' : 'Dokumen arsip MCSP yang Anda input. Pengguna lain pada area yang sama tidak dapat melihat dokumen milik Anda, begitu pula sebaliknya.'}</div>
+
+  ${driveCard}
+
+  <div class="toolbar">
+    <div class="search-box grow">
+      ${ICONS.search}
+      <input type="text" placeholder="Cari nama dokumen atau PIC..." value="${esc(f.search)}" oninput="STATE.dokumen.search=this.value; render();">
+    </div>
+    <select style="min-width:190px; padding:9px 12px; border:1px solid var(--border-strong); border-radius:8px;" onchange="STATE.dokumen.area=this.value; render();">${areaOptions}</select>
+    <select style="min-width:160px; padding:9px 12px; border:1px solid var(--border-strong); border-radius:8px;" onchange="STATE.dokumen.status=this.value; render();">
+      <option value="all" ${f.status==='all'?'selected':''}>Semua Status</option>
+      <option value="Lengkap" ${f.status==='Lengkap'?'selected':''}>Lengkap</option>
+      <option value="Belum Lengkap" ${f.status==='Belum Lengkap'?'selected':''}>Belum Lengkap</option>
+    </select>
+    <button class="btn btn-gold" onclick="openDokumenForm(null)">${ICONS.plus} Tambah Data</button>
+  </div>
+
+  <div class="table-wrap scroll-x">
+    <table>
+      <thead><tr>
+        <th>No</th><th>Nama Dokumen</th><th>Area MCSP</th><th>Tahun</th><th>Tgl Upload</th><th>PIC</th><th>Status</th><th>Catatan</th>${admin?'<th>Link Penyimpanan</th>':''}<th>Aksi</th>
+      </tr></thead>
+      <tbody>
+        ${rows || `<tr><td colspan="${admin?10:9}" class="table-empty">Belum ada dokumen yang sesuai dengan filter.</td></tr>`}
+      </tbody>
+    </table>
+  </div>
+  `;
+}
+
+function openDokumenForm(id){
+  STATE.dokumen.view='form';
+  STATE.dokumen.editingId=id;
+  STATE.dokumen.tempFile='';
+  render();
+}
+function closeDokumenForm(){
+  STATE.dokumen.view='list';
+  STATE.dokumen.editingId=null;
+  render();
+}
+function confirmDeleteDoc(id){
+  const doc = DB.documents.find(d=>d.id===id);
+  if(!doc) return;
+  STATE.modal={type:'confirmDeleteDoc', id};
+  render();
+}
+function doDeleteDoc(id){
+  const doc = DB.documents.find(d=>d.id===id);
+  if(doc){
+    DB.documents = DB.documents.filter(d=>d.id!==id);
+    logAct('Hapus Dokumen', 'Menghapus dokumen "'+doc.namaDokumen+'" ('+areaName(doc.area)+')');
+  }
+  STATE.modal=null;
+  render();
+}
+
+function dokumenFormView(){
+  const u=STATE.currentUser;
+  const admin=isAdmin(u);
+  const editing = STATE.dokumen.editingId ? DB.documents.find(d=>d.id===STATE.dokumen.editingId) : null;
+  const myAreas = accessibleAreas(u);
+  const areaOptions = myAreas.map(a=>`<option value="${a.id}" ${editing?(editing.area===a.id?'selected':''):''}>${esc(a.name)}</option>`).join('');
+  const yearOptions = YEARS.map(y=>`<option value="${y}" ${editing?(editing.tahun===y?'selected':''):(y===2026?'selected':'')}>${y}</option>`).join('');
+  const picName = editing ? (getUser(editing.picUserId)?.name || u.name) : u.name;
+  const fileName = STATE.dokumen.tempFile || (editing ? editing.fileName : '');
+
+  return `
+  <div class="page-desc">${editing?'Perbarui detail dokumen arsip MCSP.':'Lengkapi detail data untuk menambahkan dokumen arsip MCSP baru.'}</div>
+  <div class="card card-pad" style="max-width:720px;">
+    <form onsubmit="return saveDokumen(event)">
+      <div class="field">
+        <label>Area MCSP</label>
+        <select id="fArea" required>${areaOptions}</select>
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label>Tanggal Upload</label>
+          <div class="locked-field">${ICONS.lock} ${editing?editing.tanggalUpload:todayStr()} <span style="color:var(--text-muted); font-size:11px;">(mengikuti tanggal login)</span></div>
+        </div>
+        <div class="field">
+          <label>Tahun</label>
+          <select id="fTahun" required>${yearOptions}</select>
+        </div>
+      </div>
+      <div class="field">
+        <label>Nama Dokumen</label>
+        <input type="text" id="fNama" placeholder="Contoh: Laporan Realisasi Anggaran Triwulan I" value="${editing?esc(editing.namaDokumen):''}" required>
+      </div>
+      <div class="field">
+        <label>PIC (Penanggung Jawab)</label>
+        <div class="locked-field">${ICONS.lock} ${esc(picName)} <span style="color:var(--text-muted); font-size:11px;">(otomatis sesuai akun login)</span></div>
+      </div>
+      <div class="field">
+        <label>Unggah Berkas Dokumen</label>
+        <label class="file-drop" for="fFile">
+          ${ICONS.upload}<br><br>
+          Klik untuk memilih berkas, atau seret berkas ke sini<br>
+          <span style="font-size:11px;">PDF, DOCX, XLSX, JPG &middot; maks. 20MB</span>
+        </label>
+        <input type="file" id="fFile" style="display:none" onchange="onFilePick(this)">
+        ${fileName ? `<div class="file-chip">${ICONS.file} ${esc(fileName)}</div>` : ''}
+      </div>
+      ${admin ? `
+      <div class="field">
+        <label>Keterangan (Link Penyimpanan Google Drive)</label>
+        <input type="text" id="fLink" placeholder="https://drive.google.com/..." value="${editing?esc(editing.driveLink||''):''}">
+        <div class="field-hint">${ICONS.lock} Kolom ini hanya dapat dilihat oleh Admin Utama, tidak ditampilkan kepada pengguna.</div>
+      </div>` : `
+      <div class="alert alert-info" style="margin-bottom:16px;">${ICONS.info}<span>Link penyimpanan dokumen di Google Drive akan dikelola oleh Admin Utama dan tidak ditampilkan di akun Anda.</span></div>
+      `}
+      <div style="display:flex; gap:10px; margin-top:20px;">
+        <button type="submit" class="btn btn-primary">${ICONS.check} Simpan Dokumen</button>
+        <button type="button" class="btn btn-outline" onclick="closeDokumenForm()">Batal</button>
+      </div>
+    </form>
+  </div>
+  `;
+}
+function onFilePick(input){
+  if(input.files && input.files[0]){
+    STATE.dokumen.tempFile = input.files[0].name;
+    render();
+  }
+}
+function saveDokumen(e){
+  e.preventDefault();
+  const u=STATE.currentUser;
+  const admin=isAdmin(u);
+  const area=document.getElementById('fArea').value;
+  const tahun=parseInt(document.getElementById('fTahun').value);
+  const nama=document.getElementById('fNama').value.trim();
+  const linkEl=document.getElementById('fLink');
+  const link= linkEl ? linkEl.value.trim() : undefined;
+  const editing = STATE.dokumen.editingId ? DB.documents.find(d=>d.id===STATE.dokumen.editingId) : null;
+
+  if(editing){
+    editing.area=area; editing.tahun=tahun; editing.namaDokumen=nama;
+    if(STATE.dokumen.tempFile) editing.fileName=STATE.dokumen.tempFile;
+    if(admin && link!==undefined) editing.driveLink=link;
+    logAct('Edit Dokumen', 'Memperbarui dokumen "'+nama+'" ('+areaName(area)+')');
+  } else {
+    const newDoc = {
+      id:uid('d'), area, tahun, namaDokumen:nama, tanggalUpload:todayStr(),
+      picUserId:u.id, fileName:STATE.dokumen.tempFile||'', driveLink: admin?(link||''):'',
+      status:'Belum Lengkap', catatan:''
+    };
+    DB.documents.push(newDoc);
+    logAct('Tambah Dokumen', 'Menambahkan dokumen "'+nama+'" ('+areaName(area)+')');
+  }
+  STATE.dokumen.view='list';
+  STATE.dokumen.editingId=null;
+  STATE.dokumen.tempFile='';
+  render();
+  return false;
+}
+
+function openStatusModal(id){
+  STATE.modal={type:'status', id};
+  render();
+}
+function saveStatus(id){
+  const doc=DB.documents.find(d=>d.id===id);
+  if(!doc) return;
+  const status=document.getElementById('mStatus').value;
+  const catatan=document.getElementById('mCatatan').value.trim();
+  doc.status=status;
+  doc.catatan= status==='Lengkap' ? '' : catatan;
+  logAct('Ubah Status', 'Menandai "'+doc.namaDokumen+'" sebagai '+status);
+  STATE.modal=null;
+  render();
+}
+
+/* ============================================================
+   PAGE: LAPORAN
+   ============================================================ */
+function pageLaporan(){
+  const u=STATE.currentUser;
+  const admin=isAdmin(u);
+  const myAreas = accessibleAreas(u);
+  const f=STATE.laporan;
+  const year=f.year;
+
+  const areaOptions = `<option value="all">Semua Area</option>` + myAreas.map(a=>`<option value="${a.id}" ${f.area===a.id?'selected':''}>${esc(a.name)}</option>`).join('');
+  const yearOptions = YEARS.map(y=>`<option value="${y}" ${y===year?'selected':''}>${y}</option>`).join('');
+  const areasToShow = f.area==='all' ? myAreas : myAreas.filter(a=>a.id===f.area);
+
+  function countFor(areaId){
+    let docs = DB.documents.filter(d=>d.area===areaId && d.tahun===year);
+    if(!admin) docs = docs.filter(d=>d.picUserId===u.id);
+    return docs.length;
+  }
+
+  const rows = areasToShow.map(a=>{
+    const realisasi = countFor(a.id);
+    const target = getTarget(year, a.id);
+    const pct = target>0 ? Math.min(100, Math.round(realisasi/target*100)) : 0;
+    return {a, realisasi, target, pct};
+  });
+
+  const totalRealisasi = rows.reduce((s,r)=>s+r.realisasi,0);
+  const totalTarget = rows.reduce((s,r)=>s+r.target,0);
+  const totalPct = totalTarget>0 ? Math.min(100, Math.round(totalRealisasi/totalTarget*100)) : 0;
+
+  const tableRows = rows.map(r=>`
+    <tr>
+      <td><span class="pill pill-area" style="border-left:3px solid ${r.a.color}; padding-left:7px;">${esc(r.a.name)}</span></td>
+      <td>${r.realisasi}</td>
+      <td>
+        ${admin ? `<span id="targetDisplay_${r.a.id}">${r.target}</span> <button class="btn btn-icon btn-outline btn-sm" style="margin-left:6px;" onclick="editTarget('${r.a.id}')">${ICONS.edit}</button>` : r.target}
+      </td>
+      <td><b style="color:${r.pct>=100?'var(--success)':'var(--text-primary)'}">${r.pct}%</b></td>
+    </tr>`).join('');
+
+  const barsHtml = rows.map(r=>`
+    <div class="rep-bar-row">
+      <div class="rep-bar-label">${esc(r.a.name)}</div>
+      <div class="rep-bar-track"><div class="rep-bar-fill" style="width:${r.pct}%; background:${r.a.color};"></div></div>
+      <div class="rep-bar-num">${r.realisasi} / ${r.target}</div>
+    </div>`).join('');
+
+  const printTitle = f.area==='all' ? 'Semua Area MCSP' : areaName(f.area);
+
+  return `
+  <div class="page-desc">${admin ? 'Rekapitulasi jumlah dokumen terinput dibandingkan target per area MCSP.' : 'Rekapitulasi dokumen yang Anda input dibandingkan target area MCSP Anda.'}</div>
+
+  <div class="toolbar no-print">
+    <div class="field" style="margin-bottom:0; min-width:220px;">
+      <label>Area MCSP</label>
+      <select onchange="STATE.laporan.area=this.value; render();">${areaOptions}</select>
+    </div>
+    <div class="field" style="margin-bottom:0; min-width:140px;">
+      <label>Tahun</label>
+      <select onchange="STATE.laporan.year=parseInt(this.value); render();">${yearOptions}</select>
+    </div>
+    <div style="flex:1"></div>
+    <button class="btn btn-gold" onclick="window.print()">${ICONS.download} Unduh Laporan (PDF)</button>
+  </div>
+
+  <div class="grid grid-3" style="margin-bottom:20px;">
+    <div class="card stat-card"><div class="stat-label">Total Target ${year}</div><div class="stat-value">${totalTarget}</div></div>
+    <div class="card stat-card"><div class="stat-label">Total Terinput</div><div class="stat-value">${totalRealisasi}</div></div>
+    <div class="card stat-card"><div class="stat-label">Capaian</div><div class="stat-value">${totalPct}%</div></div>
+  </div>
+
+  <div id="reportPrintArea">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:4px; border-bottom:2px solid var(--navy); padding-bottom:12px;">
+      <div style="width:38px;height:38px;border-radius:9px;background:var(--navy);color:var(--gold);display:flex;align-items:center;justify-content:center;font-family:'Plus Jakarta Sans';font-weight:800;">DM</div>
+      <div>
+        <div style="font-weight:800; font-size:16px; color:var(--navy);">Laporan DiMAS &mdash; Digitalisasi MCSP Arsip Sistem</div>
+        <div style="font-size:12px; color:var(--text-secondary);">Area: ${esc(printTitle)} &middot; Tahun: ${year} &middot; Dicetak: ${todayStr()} oleh ${esc(u.name)}</div>
+      </div>
     </div>
 
-    <!-- MAIN DASHBOARD & SYSTEM APP -->
-    <div id="appLayout" class="hidden min-h-screen flex flex-col md:flex-row">
-
-        <!-- Mobile Header Overlay -->
-        <div id="sidebarBackdrop" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-30 hidden md:hidden"></div>
-
-        <!-- SIDEBAR NAVIGATION -->
-        <aside id="sidebar" class="fixed md:static inset-y-0 left-0 z-40 w-64 bg-white border-r border-slate-200/80 flex flex-col transition-transform duration-300 transform -translate-x-full md:translate-x-0 shadow-sm">
-            
-            <!-- App Brand Header -->
-            <div class="p-5 border-b border-slate-100 flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <img src="bursel.jpg"
-     alt="Logo DiMAS"
-     class="w-full h-full object-contain p-1">
-                    <div>
-                        <h2 class="font-bold text-slate-800 text-lg leading-tight tracking-tight">DiMAS</h2>
-                        <p class="text-[10px] font-semibold text-indigo-600 tracking-wider">Digitalisasi MCSP Arsip Sistem</p>
-                    </div>
-                </div>
-                <button onclick="toggleSidebar()" class="md:hidden text-slate-400 hover:text-slate-600 p-1">
-                    <i class="fa-solid fa-xmark text-lg"></i>
-                </button>
-            </div>
-
-            <!-- Navigation Links -->
-            <nav class="flex-1 p-4 space-y-1 overflow-y-auto custom-scrollbar">
-                <p class="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">Navigasi Utama</p>
-
-                <button onclick="switchView('dashboard')" id="nav-dashboard" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition">
-                    <i class="fa-solid fa-chart-pie w-5 text-slate-400"></i>
-                    <span>Dashboard</span>
-                </button>
-
-                <button onclick="switchView('documents')" id="nav-documents" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition">
-                    <i class="fa-solid fa-file-contract w-5 text-slate-400"></i>
-                    <span>Data Dokumen</span>
-                </button>
-
-                <button onclick="switchView('reports')" id="nav-reports" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition">
-                    <i class="fa-solid fa-file-invoice w-5 text-slate-400"></i>
-                    <span>Laporan</span>
-                </button>
-
-                <div id="adminMenuSection" class="pt-4 space-y-1">
-                    <p class="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">Pengaturan Inspektorat</p>
-                    
-                    <button onclick="switchView('users')" id="nav-users" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition">
-                        <i class="fa-solid fa-users-gear w-5 text-slate-400"></i>
-                        <span>Pengguna</span>
-                    </button>
-
-                    <button onclick="switchView('activity')" id="nav-activity" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition">
-                        <i class="fa-solid fa-clock-rotate-left w-5 text-slate-400"></i>
-                        <span>Riwayat Aktivitas</span>
-                    </button>
-                </div>
-            </nav>
-
-            <!-- User Session Info & Logout Footer -->
-            <div class="p-4 border-t border-slate-100 bg-slate-50/50">
-                <div class="flex items-center gap-3 mb-3">
-                    <div class="w-9 h-9 rounded-full bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center text-sm ring-2 ring-indigo-200" id="userAvatar">
-                        U
-                    </div>
-                    <div class="overflow-hidden">
-                        <p id="userNameDisplay" class="text-xs font-bold text-slate-800 truncate">Pengguna</p>
-                        <p id="userRoleBadge" class="text-[10px] text-slate-500 font-medium">Role</p>
-                    </div>
-                </div>
-                <button onclick="handleLogout()" class="w-full py-2 px-3 bg-white border border-slate-200 text-slate-700 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 font-medium rounded-xl text-xs transition flex items-center justify-center gap-2 shadow-sm">
-                    <i class="fa-solid fa-right-from-bracket"></i>
-                    <span>Keluar Sistem</span>
-                </button>
-            </div>
-        </aside>
-
-        <!-- MAIN CONTENT AREA -->
-        <div class="flex-1 flex flex-col min-w-0 bg-slate-50">
-            
-            <!-- TOP NAVBAR HEADER -->
-            <header class="bg-white border-b border-slate-200/80 sticky top-0 z-20 px-4 md:px-6 py-3.5 flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <button onclick="toggleSidebar()" class="p-2 text-slate-600 hover:bg-slate-100 rounded-xl transition focus:outline-none">
-                        <i class="fa-solid fa-bars text-lg"></i>
-                    </button>
-                    <div>
-                        <h3 id="currentViewTitle" class="text-base font-bold text-slate-800">Dashboard</h3>
-                        <p class="text-xs text-slate-400 hidden sm:block">Digitalisasi MCSP Arsip Sistem Inspektorat</p>
-                    </div>
-                </div>
-
-                <div class="flex items-center gap-3">
-                    <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-indigo-50 border border-indigo-100 rounded-xl text-xs font-medium text-indigo-700">
-                        <i class="fa-solid fa-shield-halved text-indigo-500"></i>
-                        <span id="headerRoleLabel">Admin Utama</span>
-                    </div>
-                    <div id="driveMainFolderBtn" class="hidden">
-                        <a href="https://drive.google.com" target="_blank" class="p-2 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition">
-                            <i class="fa-brands fa-google-drive text-base"></i>
-                            <span class="hidden md:inline">Drive MCSP</span>
-                        </a>
-                    </div>
-                </div>
-            </header>
-
-            <!-- DYNAMIC VIEW PAGES -->
-            <main class="flex-1 p-4 md:p-6 overflow-y-auto">
-
-                <!-- 1. DASHBOARD VIEW -->
-                <section id="dashboardView" class="view-section space-y-6">
-                    
-                    <!-- Filters Bar -->
-                    <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                        <div>
-                            <h4 class="font-bold text-slate-800 text-sm">Filter Dashboard</h4>
-                            <p class="text-xs text-slate-500">Pilih tahun dan area MCSP untuk memfilter statistik data</p>
-                        </div>
-                        <div class="flex flex-wrap items-center gap-3">
-                            <div>
-                                <label class="block text-[10px] font-semibold text-slate-400 uppercase mb-1">Tahun</label>
-                                <select id="dashYearFilter" onchange="updateDashboardStats()" class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                    <option value="2025">2025</option>
-                                    <option value="2026">2026</option>
-                                    <option value="2027">2027</option>
-                                    <option value="2028">2028</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-[10px] font-semibold text-slate-400 uppercase mb-1">Area MCSP</label>
-                                <select id="dashAreaFilter" onchange="updateDashboardStats()" class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                    <option value="ALL">Semua Area Terdaftar</option>
-                                    <!-- Dynamic MCSP Options -->
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Metrics Cards -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
-                            <div class="flex items-center justify-between mb-3">
-                                <span class="text-xs font-semibold text-slate-500">Total Dokumen</span>
-                                <div class="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
-                                    <i class="fa-solid fa-file-lines"></i>
-                                </div>
-                            </div>
-                            <h3 id="statTotalDocs" class="text-2xl font-bold text-slate-800">0</h3>
-                            <p class="text-[11px] text-slate-400 mt-1">Dokumen terarsip dalam sistem</p>
-                        </div>
-
-                        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
-                            <div class="flex items-center justify-between mb-3">
-                                <span class="text-xs font-semibold text-slate-500">Dokumen Lengkap</span>
-                                <div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                                    <i class="fa-solid fa-circle-check"></i>
-                                </div>
-                            </div>
-                            <h3 id="statCompleteDocs" class="text-2xl font-bold text-slate-800">0</h3>
-                            <p class="text-[11px] text-emerald-600 font-medium mt-1" id="statCompletePercentage">0% Terverifikasi</p>
-                        </div>
-
-                        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
-                            <div class="flex items-center justify-between mb-3">
-                                <span class="text-xs font-semibold text-slate-500">Capaian Target</span>
-                                <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
-                                    <i class="fa-solid fa-bullseye"></i>
-                                </div>
-                            </div>
-                            <h3 id="statTargetPercent" class="text-2xl font-bold text-slate-800">0%</h3>
-                            <p class="text-[11px] text-slate-400 mt-1" id="statTargetRatio">0 dari 0 Target</p>
-                        </div>
-
-                        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
-                            <div class="flex items-center justify-between mb-3">
-                                <span class="text-xs font-semibold text-slate-500">Area MCSP Aktif</span>
-                                <div class="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
-                                    <i class="fa-solid fa-layer-group"></i>
-                                </div>
-                            </div>
-                            <h3 id="statActiveAreas" class="text-2xl font-bold text-slate-800">8</h3>
-                            <p class="text-[11px] text-slate-400 mt-1">Sektor Pengawasan MCSP</p>
-                        </div>
-                    </div>
-
-                    <!-- Charts Grid -->
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <div class="lg:col-span-2 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
-                            <h4 class="font-bold text-slate-800 text-sm mb-4">Grafik Input Dokumen Per Area MCSP</h4>
-                            <div class="h-64">
-                                <canvas id="chartAreaDocs"></canvas>
-                            </div>
-                        </div>
-                        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
-                            <h4 class="font-bold text-slate-800 text-sm mb-4">Status Kelengkapan Dokumen</h4>
-                            <div class="h-64 flex items-center justify-center">
-                                <canvas id="chartStatusPie"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- 2. DATA DOKUMEN VIEW -->
-                <section id="documentsView" class="view-section space-y-6 hidden">
-                    
-                    <!-- Top Action Bar -->
-                    <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1 max-w-2xl">
-                            <!-- Search Field -->
-                            <div class="relative flex-1">
-                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-                                    <i class="fa-solid fa-magnifying-glass text-xs"></i>
-                                </span>
-                                <input type="text" id="docSearchInput" oninput="renderDocumentsTable()" placeholder="Cari nama dokumen atau PIC..." 
-                                    class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                            </div>
-                            
-                            <!-- Area Filter Dropdown -->
-                            <select id="docAreaFilter" onchange="renderDocumentsTable()" class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                <option value="ALL">Semua Area MCSP</option>
-                                <!-- Dynamic Options -->
-                            </select>
-
-                            <!-- Year Filter -->
-                            <select id="docYearFilter" onchange="renderDocumentsTable()" class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                <option value="ALL">Semua Tahun</option>
-                                <option value="2025">2025</option>
-                                <option value="2026">2026</option>
-                                <option value="2027">2027</option>
-                            </select>
-                        </div>
-
-                        <!-- Add Doc Button -->
-                        <button onclick="openDocumentModal()" class="py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-xs shadow-md shadow-indigo-600/20 transition flex items-center justify-center gap-2 whitespace-nowrap">
-                            <i class="fa-solid fa-plus text-xs"></i>
-                            <span>Tambah Dokumen</span>
-                        </button>
-                    </div>
-
-                    <!-- Documents Table Container -->
-                    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
-                        <div class="overflow-x-auto custom-scrollbar">
-                            <table class="w-full text-left border-collapse">
-                                <thead>
-                                    <tr class="bg-slate-50/80 border-b border-slate-200/80 text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                                        <th class="py-3.5 px-4">Nama Dokumen</th>
-                                        <th class="py-3.5 px-4">Area MCSP</th>
-                                        <th class="py-3.5 px-4">Tahun</th>
-                                        <th class="py-3.5 px-4">Tanggal Upload</th>
-                                        <th class="py-3.5 px-4">PIC</th>
-                                        <th class="py-3.5 px-4 admin-only-cell">Status Kelengkapan</th>
-                                        <th class="py-3.5 px-4 admin-only-cell">Link Google Drive</th>
-                                        <th class="py-3.5 px-4 text-center">Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="documentTableBody" class="divide-y divide-slate-100 text-xs">
-                                    <!-- Dynamic Rows -->
-                                </tbody>
-                            </table>
-                        </div>
-                        <div id="emptyDocumentState" class="p-8 text-center hidden">
-                            <i class="fa-solid fa-folder-open text-3xl text-slate-300 mb-2"></i>
-                            <p class="text-sm font-semibold text-slate-600">Tidak ada data dokumen ditemukan</p>
-                            <p class="text-xs text-slate-400 mt-1">Coba sesuaikan kata kunci pencarian atau filter area</p>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- 3. LAPORAN VIEW -->
-                <section id="reportsView" class="view-section space-y-6 hidden">
-                    
-                    <!-- Report Header Actions -->
-                    <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                        <div>
-                            <h4 class="font-bold text-slate-800 text-sm">Laporan Capaian MCSP</h4>
-                            <p class="text-xs text-slate-500">Melihat perbandingan data terinput vs target tahunan</p>
-                        </div>
-                        <div class="flex flex-wrap items-center gap-3">
-                            <select id="reportAreaFilter" onchange="renderReportContent()" class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                <option value="ALL">Semua Area MCSP</option>
-                                <!-- Dynamic Options -->
-                            </select>
-
-                            <select id="reportYearFilter" onchange="renderReportContent()" class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                <option value="2025">Tahun 2025</option>
-                                <option value="2026">Tahun 2026</option>
-                                <option value="2027">Tahun 2027</option>
-                            </select>
-
-                            <button id="adminEditTargetBtn" onclick="openTargetModal()" class="admin-only py-2 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl text-xs transition flex items-center gap-1.5">
-                                <i class="fa-solid fa-pen-to-square text-xs"></i>
-                                <span>Edit Target</span>
-                            </button>
-
-                            <button onclick="openPrintModal()" class="py-2 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl text-xs shadow-md shadow-emerald-600/20 transition flex items-center gap-1.5">
-                                <i class="fa-solid fa-download text-xs"></i>
-                                <span>Cetak / Download Laporan</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Report Grid Progress Cards -->
-                    <div id="reportProgressCards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <!-- Dynamic Progress Cards -->
-                    </div>
-
-                    <!-- Report Detailed Chart -->
-                    <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
-                        <h4 class="font-bold text-slate-800 text-sm mb-4">Grafik Perbandingan Terinput vs Target</h4>
-                        <div class="h-72">
-                            <canvas id="chartReportComparison"></canvas>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- 4. PENGGUNA VIEW (ADMIN ONLY) -->
-                <section id="usersView" class="view-section space-y-6 hidden">
-                    <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
-                        <div>
-                            <h4 class="font-bold text-slate-800 text-sm">Manajemen Pengguna Sistem</h4>
-                            <p class="text-xs text-slate-500">Kelola hak akses dan area penugasan user Inspektorat</p>
-                        </div>
-                        <button onclick="openUserModal()" class="py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-xs shadow-md shadow-indigo-600/20 transition flex items-center gap-2">
-                            <i class="fa-solid fa-user-plus text-xs"></i>
-                            <span>Tambah Pengguna</span>
-                        </button>
-                    </div>
-
-                    <!-- Users Table -->
-                    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
-                        <div class="overflow-x-auto custom-scrollbar">
-                            <table class="w-full text-left border-collapse">
-                                <thead>
-                                    <tr class="bg-slate-50/80 border-b border-slate-200/80 text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                                        <th class="py-3.5 px-4">Nama User</th>
-                                        <th class="py-3.5 px-4">Username</th>
-                                        <th class="py-3.5 px-4">Kata Sandi</th>
-                                        <th class="py-3.5 px-4">Peran (Role)</th>
-                                        <th class="py-3.5 px-4">Akses Area MCSP</th>
-                                        <th class="py-3.5 px-4 text-center">Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="usersTableBody" class="divide-y divide-slate-100 text-xs">
-                                    <!-- Dynamic User Rows -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- 5. RIWAYAT AKTIVITAS VIEW (ADMIN ONLY) -->
-                <section id="activityView" class="view-section space-y-6 hidden">
-                    <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
-                        <div>
-                            <h4 class="font-bold text-slate-800 text-sm">Riwayat Aktivitas Pengguna</h4>
-                            <p class="text-xs text-slate-500">Log pencatatan aktivitas entry, edit, dan hapus data</p>
-                        </div>
-                        <button onclick="clearActivityLogs()" class="py-2 px-3 bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-600 font-medium rounded-xl text-xs transition">
-                            <i class="fa-solid fa-trash-can mr-1"></i> Bersihkan Log
-                        </button>
-                    </div>
-
-                    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5">
-                        <div id="activityTimeline" class="space-y-4">
-                            <!-- Dynamic Timeline Items -->
-                        </div>
-                    </div>
-                </section>
-
-            </main>
-        </div>
+    <div class="section-title">Tabel Rekapitulasi</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Area MCSP</th><th>Realisasi</th><th>Target</th><th>Capaian</th></tr></thead>
+        <tbody>${tableRows || `<tr><td colspan="4" class="table-empty">Tidak ada data.</td></tr>`}</tbody>
+      </table>
     </div>
 
-    <!-- MODAL: ADD / EDIT DOCUMENT -->
-    <div id="documentModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm hidden overflow-y-auto">
-        <div class="bg-white rounded-2xl shadow-xl border border-slate-100 max-w-lg w-full p-6 my-8 relative">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
-                <h3 id="docModalTitle" class="font-bold text-slate-800 text-base">Tambah Dokumen Baru</h3>
-                <button onclick="closeDocumentModal()" class="text-slate-400 hover:text-slate-600 p-1">
-                    <i class="fa-solid fa-xmark text-lg"></i>
-                </button>
-            </div>
-
-            <form id="documentForm" onsubmit="saveDocument(event)" class="space-y-4">
-                <input type="hidden" id="docId">
-
-                <!-- Area MCSP Select -->
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Area MCSP <span class="text-rose-500">*</span></label>
-                    <select id="docArea" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                        <!-- Dynamic Area Options -->
-                    </select>
-                </div>
-
-                <div class="grid grid-cols-2 gap-3">
-                    <!-- Upload Date -->
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Tanggal Upload</label>
-                        <input type="date" id="docUploadDate" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    </div>
-
-                    <!-- Year Select -->
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Tahun <span class="text-rose-500">*</span></label>
-                        <select id="docYear" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                            <option value="2025">2025</option>
-                            <option value="2026">2026</option>
-                            <option value="2027">2027</option>
-                            <option value="2028">2028</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Document Name -->
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Dokumen <span class="text-rose-500">*</span></label>
-                    <input type="text" id="docName" required placeholder="Contoh: SK Tim Perencanaan Tahun 2025" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                </div>
-
-                <!-- PIC Field (Auto-filled) -->
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">PIC (Penanggung Jawab)</label>
-                    <input type="text" id="docPic" readonly class="w-full bg-slate-200/60 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-600 cursor-not-allowed">
-                </div>
-
-                <!-- Upload File Simulator -->
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Unggah File Dokumen</label>
-                    <div class="border-2 border-dashed border-slate-200 rounded-xl p-4 text-center bg-slate-50/50 hover:bg-slate-100/50 transition cursor-pointer relative" onclick="document.getElementById('docFile').click()">
-                        <i class="fa-solid fa-cloud-arrow-up text-2xl text-indigo-500 mb-1"></i>
-                        <p class="text-xs font-medium text-slate-700" id="fileUploadLabel">Klik untuk memilih file dokumen</p>
-                        <p class="text-[10px] text-slate-400 mt-0.5">PDF, DOCX, XLSX (Maks. 10MB)</p>
-                        <input type="file" id="docFile" onchange="handleFileSelected(event)" class="hidden">
-                    </div>
-                </div>
-
-                <!-- Keterangan / Notes -->
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Keterangan Catatan</label>
-                    <textarea id="docNotes" rows="2" placeholder="Catatan tambahan dokumen..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
-                </div>
-
-                <!-- ADMIN ONLY FIELDS -->
-                <div id="adminDocFields" class="p-3 bg-amber-50/60 border border-amber-200/80 rounded-xl space-y-3">
-                    <p class="text-[10px] font-bold text-amber-800 uppercase tracking-wider flex items-center gap-1">
-                        <i class="fa-solid fa-lock text-xs"></i> Pengaturan Khusus Admin Utama
-                    </p>
-                    
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">ID Dokumen</label>
-                            <input type="text" id="docCustomId" readonly class="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-mono text-slate-600">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Status Kelengkapan</label>
-                            <select id="docCompleteness" class="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-slate-800 focus:outline-none">
-                                <option value="Lengkap">Lengkap</option>
-                                <option value="Belum Lengkap">Belum Lengkap</option>
-                                <option value="Dalam Review">Dalam Review</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-700 mb-1">Link Penyimpanan Google Drive</label>
-                        <input type="url" id="docDriveUrl" placeholder="https://drive.google.com/drive/folders/1joocFulr1j_xbbuYrpCGGXKMiv6pIHXU" class="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 focus:outline-none">
-                    </div>
-                </div>
-
-                <!-- Actions -->
-                <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
-                    <button type="button" onclick="closeDocumentModal()" class="py-2 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl text-xs transition">
-                        Batal
-                    </button>
-                    <button type="submit" class="py-2 px-5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-xs shadow-md shadow-indigo-600/20 transition">
-                        Simpan Dokumen
-                    </button>
-                </div>
-            </form>
-        </div>
+    <div class="section-title">Diagram Realisasi vs Target</div>
+    <div class="card card-pad">
+      ${barsHtml || '<div class="table-empty">Tidak ada data untuk ditampilkan.</div>'}
     </div>
+  </div>
+  `;
+}
+function editTarget(areaId){
+  STATE.modal={type:'target', areaId};
+  render();
+}
+function saveTarget(areaId){
+  const val = parseInt(document.getElementById('mTargetVal').value)||0;
+  setTarget(STATE.laporan.year, areaId, val);
+  logAct('Edit Target Laporan', 'Mengubah target '+areaName(areaId)+' tahun '+STATE.laporan.year+' menjadi '+val);
+  STATE.modal=null;
+  render();
+}
 
-    <!-- MODAL: EDIT TARGET (ADMIN ONLY) -->
-    <div id="targetModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm hidden">
-        <div class="bg-white rounded-2xl shadow-xl border border-slate-100 max-w-md w-full p-6 relative">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
-                <h3 class="font-bold text-slate-800 text-base">Edit Target Dokumen Area</h3>
-                <button onclick="closeTargetModal()" class="text-slate-400 hover:text-slate-600 p-1">
-                    <i class="fa-solid fa-xmark text-lg"></i>
-                </button>
-            </div>
-
-            <form id="targetForm" onsubmit="saveTargetChanges(event)" class="space-y-4">
-                <div id="targetInputsContainer" class="space-y-3 max-h-80 overflow-y-auto custom-scrollbar pr-1">
-                    <!-- Dynamic Target Input Fields -->
-                </div>
-
-                <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
-                    <button type="button" onclick="closeTargetModal()" class="py-2 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl text-xs transition">
-                        Batal
-                    </button>
-                    <button type="submit" class="py-2 px-5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-xs shadow-md shadow-indigo-600/20 transition">
-                        Simpan Target
-                    </button>
-                </div>
-            </form>
+/* ============================================================
+   PAGE: PENGGUNA (admin only)
+   ============================================================ */
+function pagePengguna(){
+  if(STATE.pengguna.view==='form') return penggunaFormView();
+  const rows = DB.users.map((usr,i)=>{
+    const revealed = STATE.pengguna.revealed[usr.id];
+    const areaChips = usr.role==='admin' ? `<span class="chip" style="background:var(--gold-bg); color:var(--gold-dark); border-color:transparent;">Seluruh Area</span>` :
+      usr.areas.map(aid=>`<span class="chip">${esc(areaName(aid))}</span>`).join('') || '<span style="color:var(--text-muted); font-size:11.5px;">Belum ada area</span>';
+    return `
+    <tr>
+      <td>${i+1}</td>
+      <td><b>${esc(usr.username)}</b></td>
+      <td>${esc(usr.name)}</td>
+      <td>${esc(usr.organisasi)}</td>
+      <td><span class="badge-role ${usr.role}">${usr.role==='admin'?'ADMIN UTAMA':'PENGGUNA'}</span></td>
+      <td style="max-width:260px;">${areaChips}</td>
+      <td>
+        <span class="mono">${revealed ? esc(usr.password) : '•'.repeat(Math.min(usr.password.length,10))}</span>
+        <button class="eye-btn" onclick="togglePassReveal('${usr.id}')">${revealed?ICONS.eyeOff:ICONS.eye}</button>
+      </td>
+      <td>
+        <div style="display:flex; gap:6px;">
+          <button class="btn btn-icon btn-outline" title="Edit" onclick="openUserForm('${usr.id}')">${ICONS.edit}</button>
+          ${usr.id!==STATE.currentUser.id ? `<button class="btn btn-icon btn-danger-outline" title="Hapus" onclick="confirmDeleteUser('${usr.id}')">${ICONS.trash}</button>` : ''}
         </div>
-    </div>
+      </td>
+    </tr>`;
+  }).join('');
 
-    <!-- MODAL: MANAGE USER (ADMIN ONLY) -->
-    <div id="userModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm hidden overflow-y-auto">
-        <div class="bg-white rounded-2xl shadow-xl border border-slate-100 max-w-md w-full p-6 my-8 relative">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
-                <h3 id="userModalTitle" class="font-bold text-slate-800 text-base">Pengaturan Pengguna</h3>
-                <button onclick="closeUserModal()" class="text-slate-400 hover:text-slate-600 p-1">
-                    <i class="fa-solid fa-xmark text-lg"></i>
-                </button>
-            </div>
+  return `
+  <div class="page-desc">Kelola akun pengguna, hak akses area MCSP, dan organisasi perangkat daerah. Hanya Admin Utama (Inspektorat) yang dapat mengelola halaman ini.</div>
+  <div class="toolbar">
+    <div style="flex:1"></div>
+    <button class="btn btn-gold" onclick="openUserForm(null)">${ICONS.plus} Tambah Pengguna</button>
+  </div>
+  <div class="table-wrap scroll-x">
+    <table>
+      <thead><tr><th>No</th><th>Username</th><th>Nama</th><th>Organisasi</th><th>Role</th><th>Area Akses</th><th>Password</th><th>Aksi</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  </div>
+  `;
+}
+function togglePassReveal(id){
+  STATE.pengguna.revealed[id]=!STATE.pengguna.revealed[id];
+  render();
+}
+function openUserForm(id){
+  STATE.pengguna.view='form';
+  STATE.pengguna.editingId=id;
+  render();
+}
+function closeUserForm(){
+  STATE.pengguna.view='list';
+  STATE.pengguna.editingId=null;
+  render();
+}
+function confirmDeleteUser(id){
+  STATE.modal={type:'confirmDeleteUser', id};
+  render();
+}
+function doDeleteUser(id){
+  const usr=DB.users.find(x=>x.id===id);
+  if(usr){
+    DB.users=DB.users.filter(x=>x.id!==id);
+    logAct('Hapus Pengguna', 'Menghapus akun pengguna "'+usr.username+'"');
+  }
+  STATE.modal=null;
+  render();
+}
 
-            <form id="userForm" onsubmit="saveUser(event)" class="space-y-4">
-                <input type="hidden" id="userId">
+function penggunaFormView(){
+  const editing = STATE.pengguna.editingId ? DB.users.find(x=>x.id===STATE.pengguna.editingId) : null;
+  const role = editing ? editing.role : 'user';
+  const orgOptions = ORGANISASI.map(o=>`<option value="${esc(o)}" ${editing&&editing.organisasi===o?'selected':''}>${esc(o)}</option>`).join('');
+  const areaChecks = AREAS.map(a=>{
+    const checked = editing ? editing.areas.includes(a.id) : false;
+    return `<label class="check-item"><input type="checkbox" class="areaChk" value="${a.id}" ${checked?'checked':''}> ${esc(a.name)}</label>`;
+  }).join('');
 
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Lengkap Pengguna <span class="text-rose-500">*</span></label>
-                    <input type="text" id="userFullName" required placeholder="Nama lengkap..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:outline-none">
-                </div>
-
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Username <span class="text-rose-500">*</span></label>
-                    <input type="text" id="userUsername" required placeholder="username_unik" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:outline-none">
-                </div>
-
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Kata Sandi <span class="text-rose-500">*</span></label>
-                    <div class="relative">
-                        <input type="password" id="userPassword" required placeholder="••••••••" class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-3 pr-10 py-2 text-xs font-medium text-slate-800 focus:outline-none">
-                        <button type="button" onclick="togglePasswordVisibility('userPassword', 'userPassIcon')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600">
-                            <i id="userPassIcon" class="fa-solid fa-eye text-xs"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Peran Akses Sistem</label>
-                    <select id="userRole" onchange="toggleAreaCheckboxes()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none">
-                        <option value="user">User Biasa / PIC Area</option>
-                        <option value="admin">Admin Utama (Inspektorat)</option>
-                    </select>
-                </div>
-
-                <div id="areaAccessContainer">
-                    <label class="block text-xs font-semibold text-slate-600 mb-2">Penugasan Akses Area MCSP</label>
-                    <div id="areaCheckboxes" class="space-y-1.5 max-h-40 overflow-y-auto custom-scrollbar p-3 bg-slate-50 rounded-xl border border-slate-200">
-                        <!-- Dynamic Area Checkboxes -->
-                    </div>
-                </div>
-
-                <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
-                    <button type="button" onclick="closeUserModal()" class="py-2 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl text-xs transition">
-                        Batal
-                    </button>
-                    <button type="submit" class="py-2 px-5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-xs shadow-md shadow-indigo-600/20 transition">
-                        Simpan Pengguna
-                    </button>
-                </div>
-            </form>
+  return `
+  <div class="page-desc">${editing?'Perbarui data pengguna dan hak akses area MCSP.':'Tambahkan akun pengguna baru beserta organisasi dan area MCSP yang dapat diakses.'}</div>
+  <div class="card card-pad" style="max-width:640px;">
+    <form onsubmit="return saveUserForm(event)">
+      <div class="form-row">
+        <div class="field">
+          <label>Username</label>
+          <input type="text" id="uUsername" value="${editing?esc(editing.username):''}" required>
         </div>
-    </div>
-
-    <!-- MODAL: PRINT / DOWNLOAD REPORT PREVIEW (ONLY TABLES AND CHARTS) -->
-    <div id="printModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm hidden overflow-y-auto">
-        <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-4xl w-full p-6 my-8 relative flex flex-col max-h-[90vh]">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-3 no-print">
-                <h3 class="font-bold text-slate-800 text-base">Pratinjau Laporan Cetak (Bebas Navigasi)</h3>
-                <div class="flex items-center gap-2">
-                    <button onclick="window.print()" class="py-1.5 px-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg text-xs transition flex items-center gap-1.5">
-                        <i class="fa-solid fa-print"></i>
-                        <span>Cetak Laporan</span>
-                    </button>
-                    <button onclick="closePrintModal()" class="text-slate-400 hover:text-slate-600 p-1">
-                        <i class="fa-solid fa-xmark text-lg"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- PRINTABLE CONTENT CONTAINER -->
-            <div id="printArea" class="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6 bg-white">
-                <div class="text-center border-b pb-4">
-                    <h2 class="text-xl font-bold text-slate-900">LAPORAN CAPAIAN DOKUMEN ARSIP MCSP</h2>
-                    <p class="text-xs text-slate-600 font-medium mt-0.5">INSPEKTORAT DAERAH - SISTEM DiMAS</p>
-                    <p class="text-[11px] text-slate-400 mt-1" id="printReportMetaDate">Dicetak pada: -</p>
-                </div>
-
-                <!-- Printable Progress Summary Table -->
-                <div>
-                    <h4 class="text-xs font-bold uppercase text-slate-700 mb-2">1. Ringkasan Capaian Per Area MCSP</h4>
-                    <table class="w-full text-left border-collapse border border-slate-300 text-xs">
-                        <thead>
-                            <tr class="bg-slate-100 border-b border-slate-300 font-bold text-slate-800">
-                                <th class="border border-slate-300 p-2">No</th>
-                                <th class="border border-slate-300 p-2">Area MCSP</th>
-                                <th class="border border-slate-300 p-2 text-center">Jumlah Input</th>
-                                <th class="border border-slate-300 p-2 text-center">Target</th>
-                                <th class="border border-slate-300 p-2 text-center">Persentase</th>
-                            </tr>
-                        </thead>
-                        <tbody id="printReportSummaryBody">
-                            <!-- Dynamic Print Rows -->
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- Printable Detailed Documents List Table -->
-                <div>
-                    <h4 class="text-xs font-bold uppercase text-slate-700 mb-2">2. Daftar Rincian Dokumen Terinput</h4>
-                    <table class="w-full text-left border-collapse border border-slate-300 text-xs">
-                        <thead>
-                            <tr class="bg-slate-100 border-b border-slate-300 font-bold text-slate-800">
-                                <th class="border border-slate-300 p-2">No</th>
-                                <th class="border border-slate-300 p-2">Nama Dokumen</th>
-                                <th class="border border-slate-300 p-2">Area MCSP</th>
-                                <th class="border border-slate-300 p-2">Tahun</th>
-                                <th class="border border-slate-300 p-2">Tgl Upload</th>
-                                <th class="border border-slate-300 p-2">PIC</th>
-                            </tr>
-                        </thead>
-                        <tbody id="printReportDocsBody">
-                            <!-- Dynamic Print Doc Rows -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+        <div class="field">
+          <label>Password</label>
+          <input type="text" id="uPassword" value="${editing?esc(editing.password):''}" required>
         </div>
+      </div>
+      <div class="field">
+        <label>Nama Lengkap</label>
+        <input type="text" id="uName" value="${editing?esc(editing.name):''}" required>
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label>Organisasi Perangkat Daerah</label>
+          <select id="uOrg" required>${orgOptions}</select>
+        </div>
+        <div class="field">
+          <label>Role</label>
+          <select id="uRole" onchange="onRoleChange(this.value)">
+            <option value="user" ${role==='user'?'selected':''}>Pengguna</option>
+            <option value="admin" ${role==='admin'?'selected':''}>Admin Utama</option>
+          </select>
+        </div>
+      </div>
+      <div class="field" id="areaAccessField" style="${role==='admin'?'display:none;':''}">
+        <label>Area MCSP yang Dapat Diakses</label>
+        <div class="check-grid">${areaChecks}</div>
+        <div class="field-hint">Pengguna hanya dapat melihat dan mengelola dokumen pada area yang dicentang, dan hanya dokumen miliknya sendiri.</div>
+      </div>
+      <div style="display:flex; gap:10px; margin-top:20px;">
+        <button type="submit" class="btn btn-primary">${ICONS.check} Simpan Pengguna</button>
+        <button type="button" class="btn btn-outline" onclick="closeUserForm()">Batal</button>
+      </div>
+    </form>
+  </div>
+  `;
+}
+function onRoleChange(val){
+  document.getElementById('areaAccessField').style.display = val==='admin' ? 'none':'block';
+}
+function saveUserForm(e){
+  e.preventDefault();
+  const username=document.getElementById('uUsername').value.trim();
+  const password=document.getElementById('uPassword').value;
+  const name=document.getElementById('uName').value.trim();
+  const organisasi=document.getElementById('uOrg').value;
+  const role=document.getElementById('uRole').value;
+  const areasChecked = Array.from(document.querySelectorAll('.areaChk:checked')).map(c=>c.value);
+  const areas = role==='admin' ? AREAS.map(a=>a.id) : areasChecked;
+
+  const dupe = DB.users.find(x=>x.username===username && x.id!==STATE.pengguna.editingId);
+  if(dupe){ alert('Username sudah digunakan oleh pengguna lain.'); return false; }
+
+  const editing = STATE.pengguna.editingId ? DB.users.find(x=>x.id===STATE.pengguna.editingId) : null;
+  if(editing){
+    editing.username=username; editing.password=password; editing.name=name;
+    editing.organisasi=organisasi; editing.role=role; editing.areas=areas;
+    logAct('Edit Pengguna', 'Memperbarui akun pengguna "'+username+'"');
+    if(STATE.currentUser.id===editing.id) STATE.currentUser=editing;
+  } else {
+    DB.users.push({id:uid('u'), username, password, name, role, organisasi, areas});
+    logAct('Tambah Pengguna', 'Menambahkan akun pengguna baru "'+username+'"');
+  }
+  STATE.pengguna.view='list';
+  STATE.pengguna.editingId=null;
+  render();
+  return false;
+}
+
+/* ============================================================
+   PAGE: RIWAYAT AKTIVITAS (admin only)
+   ============================================================ */
+function pageRiwayat(){
+  const q = STATE.riwayat.search.trim().toLowerCase();
+  let list = DB.activity;
+  if(q) list = list.filter(a => a.user.toLowerCase().includes(q) || a.aksi.toLowerCase().includes(q) || a.detail.toLowerCase().includes(q));
+
+  const rows = list.map(a=>`
+    <tr>
+      <td style="white-space:nowrap; color:var(--text-secondary);">${a.waktu}</td>
+      <td><b>${esc(a.user)}</b></td>
+      <td><span class="chip">${esc(a.aksi)}</span></td>
+      <td>${esc(a.detail)}</td>
+    </tr>`).join('');
+
+  return `
+  <div class="page-desc">Catatan seluruh aktivitas pengguna di dalam sistem DiMAS.</div>
+  <div class="toolbar">
+    <div class="search-box grow">
+      ${ICONS.search}
+      <input type="text" placeholder="Cari berdasarkan pengguna, aksi, atau detail..." value="${esc(STATE.riwayat.search)}" oninput="STATE.riwayat.search=this.value; render();">
     </div>
-
-
-    <script>
-        /*
-         * DiMAS (Digitalisasi MCSP Arsip Sistem) Logic
-         */
-
-        // 8 Mandatory MCSP Areas
-        const MCSP_AREAS = [
-            "Perencanaan",
-            "Anggaran",
-            "Pengadaan Barang Jasa",
-            "Pelayanan Publik",
-            "Manajemen ASN",
-            "Barang Milik Daerah",
-            "Optimalisasi Penerimaan Daerah",
-            "Penguatan APIP"
-        ];
-
-        // Initial Seeded Users
-        const DEFAULT_USERS = [
-            {
-                id: "usr-1",
-                name: "Inspektorat Utama (Admin)",
-                username: "inspektorat_admin",
-                password: "admin123",
-                role: "admin",
-                allowedAreas: [...MCSP_AREAS]
-            },
-            {
-                id: "usr-2",
-                name: "Budi Santoso (PIC Perencanaan)",
-                username: "pic_perencanaan",
-                password: "user123",
-                role: "user",
-                allowedAreas: ["Perencanaan"]
-            },
-            {
-                id: "usr-3",
-                name: "Siti Rahma (PIC Anggaran)",
-                username: "pic_anggaran",
-                password: "user123",
-                role: "user",
-                allowedAreas: ["Anggaran", "Perencanaan"]
-            }
-        ];
-
-        // Default Targets per Area (Admin editable)
-        const DEFAULT_TARGETS = {
-            "Perencanaan": 10,
-            "Anggaran": 12,
-            "Pengadaan Barang Jasa": 15,
-            "Pelayanan Publik": 8,
-            "Manajemen ASN": 10,
-            "Barang Milik Daerah": 12,
-            "Optimalisasi Penerimaan Daerah": 10,
-            "Penguatan APIP": 14
-        };
-
-        // Seeded Initial Documents
-        const DEFAULT_DOCUMENTS = [
-            {
-                id: "DOC-2025-001",
-                name: "Dokumen Renstra Inspektorat 2025-2029",
-                area: "Perencanaan",
-                year: "2025",
-                uploadDate: "2025-01-15",
-                pic: "Budi Santoso (PIC Perencanaan)",
-                completeness: "Lengkap",
-                driveUrl: "https://drive.google.com/drive/folders/1joocFulr1j_xbbuYrpCGGXKMiv6pIHXU",
-                notes: "Telah disahkan oleh Kepala Inspektorat",
-                fileName: "Renstra_2025.pdf"
-            },
-            {
-                id: "DOC-2025-002",
-                name: "Rencana Kerja Anggaran (RKA) 2025",
-                area: "Anggaran",
-                year: "2025",
-                uploadDate: "2025-02-10",
-                pic: "Siti Rahma (PIC Anggaran)",
-                completeness: "Lengkap",
-                driveUrl: "https://drive.google.com/drive/folders/1joocFulr1j_xbbuYrpCGGXKMiv6pIHXU",
-                notes: "DPA telah diverifikasi",
-                fileName: "RKA_2025_Final.pdf"
-            },
-            {
-                id: "DOC-2025-003",
-                name: "Laporan Pengadaan Barang & Jasa Triwulan 1",
-                area: "Pengadaan Barang Jasa",
-                year: "2025",
-                uploadDate: "2025-04-05",
-                pic: "Inspektorat Utama (Admin)",
-                completeness: "Dalam Review",
-                driveUrl: "https://drive.google.com/drive/folders/1joocFulr1j_xbbuYrpCGGXKMiv6pIHXU",
-                notes: "Menunggu tanda tangan PPK",
-                fileName: "PBJ_Q1_2025.pdf"
-            },
-            {
-                id: "DOC-2025-004",
-                name: "Standar Pelayanan Publik Inspektorat",
-                area: "Pelayanan Publik",
-                year: "2025",
-                uploadDate: "2025-05-12",
-                pic: "Inspektorat Utama (Admin)",
-                completeness: "Lengkap",
-                driveUrl: "https://drive.google.com/drive/folders/1joocFulr1j_xbbuYrpCGGXKMiv6pIHXU",
-                notes: "Sudah dipublikasi di portal utama",
-                fileName: "SPP_2025.pdf"
-            }
-        ];
-
-        // Application State Management
-        let appState = {
-            currentUser: null,
-            users: JSON.parse(localStorage.getItem('dimas_users')) || DEFAULT_USERS,
-            documents: JSON.parse(localStorage.getItem('dimas_documents')) || DEFAULT_DOCUMENTS,
-            targets: JSON.parse(localStorage.getItem('dimas_targets')) || DEFAULT_TARGETS,
-            activityLogs: JSON.parse(localStorage.getItem('dimas_activities')) || [
-                { id: 1, user: "Inspektorat Utama (Admin)", action: "Inisialisasi Sistem DiMAS", time: new Date().toLocaleString('id-ID') }
-            ],
-            selectedFileTemp: null
-        };
-
-        // Chart References
-        let chartAreaDocsInstance = null;
-        let chartStatusPieInstance = null;
-        let chartReportCompInstance = null;
-
-        // Initialize App on DOM Loaded
-        document.addEventListener('DOMContentLoaded', () => {
-            populateAreaDropdowns();
-            checkSavedSession();
-        });
-
-        // Helper: Save state to localStorage
-        function saveState() {
-            localStorage.setItem('dimas_users', JSON.stringify(appState.users));
-            localStorage.setItem('dimas_documents', JSON.stringify(appState.documents));
-            localStorage.setItem('dimas_targets', JSON.stringify(appState.targets));
-            localStorage.setItem('dimas_activities', JSON.stringify(appState.activityLogs));
-        }
-
-        // Helper: Log user activity
-        function logActivity(actionText) {
-            const newLog = {
-                id: Date.now(),
-                user: appState.currentUser ? appState.currentUser.name : "System",
-                action: actionText,
-                time: new Date().toLocaleString('id-ID')
-            };
-            appState.activityLogs.unshift(newLog);
-            saveState();
-        }
-
-        // Helper: Populate Area Select Dropdowns
-        function populateAreaDropdowns() {
-            const optionsHtml = MCSP_AREAS.map(area => `<option value="${area}">${area}</option>`).join('');
-            
-            document.getElementById('dashAreaFilter').innerHTML = `<option value="ALL">Semua Area Terdaftar</option>` + optionsHtml;
-            document.getElementById('docAreaFilter').innerHTML = `<option value="ALL">Semua Area MCSP</option>` + optionsHtml;
-            document.getElementById('reportAreaFilter').innerHTML = `<option value="ALL">Semua Area MCSP</option>` + optionsHtml;
-            document.getElementById('docArea').innerHTML = optionsHtml;
-        }
-
-        // Quick Demo Login helper
-        function quickLogin(username, password) {
-            document.getElementById('loginUsername').value = username;
-            document.getElementById('loginPassword').value = password;
-            handleLogin(new Event('submit'));
-        }
-
-        // Handle Login Submission
-        function handleLogin(e) {
-            e.preventDefault();
-            const username = document.getElementById('loginUsername').value.trim();
-            const password = document.getElementById('loginPassword').value;
-
-            const user = appState.users.find(u => u.username === username && u.password === password);
-
-            if (user) {
-                appState.currentUser = user;
-                localStorage.setItem('dimas_current_user', JSON.stringify(user));
-                
-                logActivity(`User masuk ke sistem`);
-                showToast(`Selamat datang, ${user.name}`, 'success');
-
-                document.getElementById('loginView').classList.add('hidden');
-                document.getElementById('appLayout').classList.remove('hidden');
-
-                applyRolePermissionsUI();
-                switchView('dashboard');
-            } else {
-                showToast('Username atau Kata Sandi salah!', 'error');
-            }
-        }
-
-        // Session recovery
-        function checkSavedSession() {
-            const savedUser = localStorage.getItem('dimas_current_user');
-            if (savedUser) {
-                appState.currentUser = JSON.parse(savedUser);
-                document.getElementById('loginView').classList.add('hidden');
-                document.getElementById('appLayout').classList.remove('hidden');
-                applyRolePermissionsUI();
-                switchView('dashboard');
-            }
-        }
-
-        // Logout
-        function handleLogout() {
-            if (appState.currentUser) {
-                logActivity(`User keluar dari sistem`);
-            }
-            appState.currentUser = null;
-            localStorage.removeItem('dimas_current_user');
-            document.getElementById('appLayout').classList.add('hidden');
-            document.getElementById('loginView').classList.remove('hidden');
-            showToast('Anda telah keluar dari sistem', 'info');
-        }
-
-        // Apply Role-based visibility and access restrictions
-        function applyRolePermissionsUI() {
-            const user = appState.currentUser;
-            if (!user) return;
-
-            const isAdmin = user.role === 'admin';
-
-            // Topbar & Sidebar profile display
-            document.getElementById('userNameDisplay').textContent = user.name;
-            document.getElementById('userRoleBadge').textContent = isAdmin ? "Admin Utama (Inspektorat)" : "User PIC Area";
-            document.getElementById('userAvatar').textContent = user.name.charAt(0).toUpperCase();
-            document.getElementById('headerRoleLabel').textContent = isAdmin ? "Admin Utama" : "User " + (user.allowedAreas[0] || "");
-
-            // Hide/Show Admin-Only Menu Items
-            const adminSection = document.getElementById('adminMenuSection');
-            const adminDriveBtn = document.getElementById('driveMainFolderBtn');
-            const adminTargetBtn = document.getElementById('adminEditTargetBtn');
-
-            if (isAdmin) {
-                adminSection.classList.remove('hidden');
-                adminDriveBtn.classList.remove('hidden');
-                if(adminTargetBtn) adminTargetBtn.classList.remove('hidden');
-            } else {
-                adminSection.classList.add('hidden');
-                adminDriveBtn.classList.add('hidden');
-                if(adminTargetBtn) adminTargetBtn.classList.add('hidden');
-            }
-
-            // Filter Area Options based on user assignment
-            filterAreaDropdownsForUser();
-        }
-
-        // Restrict dropdown choices for regular user to assigned areas
-        function filterAreaDropdownsForUser() {
-            const user = appState.currentUser;
-            if (!user) return;
-
-            const isUserAdmin = user.role === 'admin';
-            const allowed = user.allowedAreas || [];
-
-            const updateOptions = (selectId, includeAllOption = true) => {
-                const select = document.getElementById(selectId);
-                if (!select) return;
-
-                let html = includeAllOption ? `<option value="ALL">Semua Area Terdaftar</option>` : '';
-                MCSP_AREAS.forEach(area => {
-                    if (isUserAdmin || allowed.includes(area)) {
-                        html += `<option value="${area}">${area}</option>`;
-                    }
-                });
-                select.innerHTML = html;
-            };
-
-            updateOptions('dashAreaFilter', true);
-            updateOptions('docAreaFilter', true);
-            updateOptions('reportAreaFilter', true);
-            updateOptions('docArea', false);
-        }
-
-        // Navigation view switcher
-        function switchView(viewName) {
-            const isAdmin = appState.currentUser?.role === 'admin';
-
-            // Security check: restrict regular user from accessing admin-only views
-            if (!isAdmin && (viewName === 'users' || viewName === 'activity')) {
-                showToast('Akses ditolak! Fitur hanya untuk Admin Utama.', 'error');
-                return;
-            }
-
-            // Hide all sections
-            document.querySelectorAll('.view-section').forEach(sec => sec.classList.add('hidden'));
-
-            // Deactivate nav items
-            document.querySelectorAll('.nav-item').forEach(btn => {
-                btn.classList.remove('bg-indigo-50', 'text-indigo-600', 'font-bold');
-                btn.classList.add('text-slate-600');
-            });
-
-            // Show target section & highlight button
-            const targetSection = document.getElementById(viewName + 'View');
-            const targetNav = document.getElementById('nav-' + viewName);
-
-            if (targetSection) targetSection.classList.remove('hidden');
-            if (targetNav) {
-                targetNav.classList.add('bg-indigo-50', 'text-indigo-600', 'font-bold');
-                targetNav.classList.remove('text-slate-600');
-            }
-
-            // Update Header Title
-            const titles = {
-                dashboard: "Dashboard Sistem",
-                documents: "Data Dokumen Arsip MCSP",
-                reports: "Laporan Capaian Target",
-                users: "Manajemen Pengguna",
-                activity: "Riwayat Aktivitas System"
-            };
-            document.getElementById('currentViewTitle').textContent = titles[viewName] || "DiMAS";
-
-            // Mobile sidebar hide on view click
-            if (window.innerWidth < 768) {
-                document.getElementById('sidebar').classList.add('-translate-x-full');
-                document.getElementById('sidebarBackdrop').classList.add('hidden');
-            }
-
-            // Trigger view-specific render logic
-            if (viewName === 'dashboard') updateDashboardStats();
-            if (viewName === 'documents') renderDocumentsTable();
-            if (viewName === 'reports') renderReportContent();
-            if (viewName === 'users') renderUsersTable();
-            if (viewName === 'activity') renderActivityLogs();
-        }
-
-        // Toggle mobile sidebar
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const backdrop = document.getElementById('sidebarBackdrop');
-            sidebar.classList.toggle('-translate-x-full');
-            backdrop.classList.toggle('hidden');
-        }
-
-        // Dashboard Stats & Chart Renderer
-        function updateDashboardStats() {
-            const user = appState.currentUser;
-            const selectedYear = document.getElementById('dashYearFilter').value;
-            const selectedArea = document.getElementById('dashAreaFilter').value;
-
-            // Filter documents based on user role permissions & filters
-            let filteredDocs = appState.documents.filter(doc => {
-                const yearMatch = doc.year === selectedYear;
-                const areaMatch = selectedArea === 'ALL' ? true : doc.area === selectedArea;
-                const userAreaPerm = user.role === 'admin' ? true : user.allowedAreas.includes(doc.area);
-                return yearMatch && areaMatch && userAreaPerm;
-            });
-
-            const total = filteredDocs.length;
-            const complete = filteredDocs.filter(d => d.completeness === 'Lengkap').length;
-            const completePercentage = total > 0 ? Math.round((complete / total) * 100) : 0;
-
-            // Target calculation
-            let totalTarget = 0;
-            if (selectedArea === 'ALL') {
-                MCSP_AREAS.forEach(area => {
-                    if (user.role === 'admin' || user.allowedAreas.includes(area)) {
-                        totalTarget += appState.targets[area] || 10;
-                    }
-                });
-            } else {
-                totalTarget = appState.targets[selectedArea] || 10;
-            }
-
-            const targetRatioPercent = totalTarget > 0 ? Math.min(Math.round((total / totalTarget) * 100), 100) : 0;
-
-            // Update KPI DOM
-            document.getElementById('statTotalDocs').textContent = total;
-            document.getElementById('statCompleteDocs').textContent = complete;
-            document.getElementById('statCompletePercentage').textContent = `${completePercentage}% Terverifikasi`;
-            document.getElementById('statTargetPercent').textContent = `${targetRatioPercent}%`;
-            document.getElementById('statTargetRatio').textContent = `${total} dari ${totalTarget} Target`;
-            document.getElementById('statActiveAreas').textContent = user.role === 'admin' ? MCSP_AREAS.length : user.allowedAreas.length;
-
-            renderDashboardCharts(filteredDocs, selectedYear);
-        }
-
-        function renderDashboardCharts(filteredDocs, year) {
-            const user = appState.currentUser;
-            const visibleAreas = MCSP_AREAS.filter(area => user.role === 'admin' || user.allowedAreas.includes(area));
-
-            // Area Count Dataset
-            const areaCounts = visibleAreas.map(area => {
-                return filteredDocs.filter(d => d.area === area).length;
-            });
-
-            // 1. Bar Chart: Docs per Area
-            const ctxArea = document.getElementById('chartAreaDocs').getContext('2d');
-            if (chartAreaDocsInstance) chartAreaDocsInstance.destroy();
-
-            chartAreaDocsInstance = new Chart(ctxArea, {
-                type: 'bar',
-                data: {
-                    labels: visibleAreas.map(a => a.length > 15 ? a.substring(0, 15) + '...' : a),
-                    datasets: [{
-                        label: `Jumlah Dokumen (${year})`,
-                        data: areaCounts,
-                        backgroundColor: '#6366f1',
-                        borderRadius: 8
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { beginAtZero: true, ticks: { precision: 0 } }
-                    }
-                }
-            });
-
-            // 2. Pie Chart: Document Completeness Status
-            const statusCounts = {
-                'Lengkap': filteredDocs.filter(d => d.completeness === 'Lengkap').length,
-                'Belum Lengkap': filteredDocs.filter(d => d.completeness === 'Belum Lengkap').length,
-                'Dalam Review': filteredDocs.filter(d => d.completeness === 'Dalam Review').length
-            };
-
-            const ctxStatus = document.getElementById('chartStatusPie').getContext('2d');
-            if (chartStatusPieInstance) chartStatusPieInstance.destroy();
-
-            chartStatusPieInstance = new Chart(ctxStatus, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Lengkap', 'Belum Lengkap', 'Dalam Review'],
-                    datasets: [{
-                        data: [statusCounts['Lengkap'], statusCounts['Belum Lengkap'], statusCounts['Dalam Review']],
-                        backgroundColor: ['#10b981', '#f43f5e', '#f59e0b']
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'bottom' }
-                    }
-                }
-            });
-        }
-
-        // Render Data Dokumen Table
-        function renderDocumentsTable() {
-            const user = appState.currentUser;
-            const search = document.getElementById('docSearchInput').value.toLowerCase();
-            const areaFilter = document.getElementById('docAreaFilter').value;
-            const yearFilter = document.getElementById('docYearFilter').value;
-
-            const isAdmin = user.role === 'admin';
-
-            // Toggle admin-only table header columns visibility
-            document.querySelectorAll('.admin-only-cell').forEach(el => {
-                if (isAdmin) el.classList.remove('hidden');
-                else el.classList.add('hidden');
-            });
-
-            const tbody = document.getElementById('documentTableBody');
-            tbody.innerHTML = '';
-
-            let docs = appState.documents.filter(doc => {
-                // Filter by assigned user area permissions
-                const permMatch = isAdmin ? true : user.allowedAreas.includes(doc.area);
-                const areaMatch = areaFilter === 'ALL' ? true : doc.area === areaFilter;
-                const yearMatch = yearFilter === 'ALL' ? true : doc.year === yearFilter;
-                const searchMatch = doc.name.toLowerCase().includes(search) || doc.pic.toLowerCase().includes(search);
-                return permMatch && areaMatch && yearMatch && searchMatch;
-            });
-
-            if (docs.length === 0) {
-                document.getElementById('emptyDocumentState').classList.remove('hidden');
-                return;
-            } else {
-                document.getElementById('emptyDocumentState').classList.add('hidden');
-            }
-
-            docs.forEach((doc, idx) => {
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50/80 transition duration-150 border-b border-slate-100";
-
-                // Status badge formatting
-                let statusBadge = '';
-                if (doc.completeness === 'Lengkap') {
-                    statusBadge = `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700"><i class="fa-solid fa-check text-[9px]"></i> Lengkap</span>`;
-                } else if (doc.completeness === 'Dalam Review') {
-                    statusBadge = `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700"><i class="fa-solid fa-clock text-[9px]"></i> Review</span>`;
-                } else {
-                    statusBadge = `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700"><i class="fa-solid fa-xmark text-[9px]"></i> Belum Lengkap</span>`;
-                }
-
-                // Drive link column (Admin only)
-                let driveCol = '';
-                if (isAdmin) {
-                    driveCol = `<td class="py-3 px-4">
-                        <a href="${doc.driveUrl || 'https://drive.google.com'}" target="_blank" class="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 font-medium hover:underline text-xs">
-                            <i class="fa-brands fa-google-drive"></i> Folder Drive
-                        </a>
-                    </td>`;
-                }
-
-                tr.innerHTML = `
-                    <td class="py-3 px-4">
-                        <p class="font-bold text-slate-800">${doc.name}</p>
-                        <p class="text-[10px] text-slate-400">${doc.fileName || 'Dokumen.pdf'}</p>
-                    </td>
-                    <td class="py-3 px-4">
-                        <span class="inline-block px-2 py-0.5 bg-slate-100 text-slate-700 rounded-md text-[10px] font-semibold">${doc.area}</span>
-                    </td>
-                    <td class="py-3 px-4 font-semibold text-slate-600">${doc.year}</td>
-                    <td class="py-3 px-4 text-slate-500">${doc.uploadDate}</td>
-                    <td class="py-3 px-4 font-medium text-slate-700">${doc.pic}</td>
-                    ${isAdmin ? `<td class="py-3 px-4">${statusBadge}</td>` : ''}
-                    ${driveCol}
-                    <td class="py-3 px-4 text-center">
-                        <div class="flex items-center justify-center gap-1">
-                            <button onclick="editDocument('${doc.id}')" title="Edit Dokumen" class="p-1.5 text-slate-400 hover:text-indigo-600 rounded-lg hover:bg-indigo-50 transition">
-                                <i class="fa-solid fa-pen-to-square"></i>
-                            </button>
-                            <button onclick="deleteDocument('${doc.id}')" title="Hapus Dokumen" class="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition">
-                                <i class="fa-solid fa-trash-can"></i>
-                            </button>
-                        </div>
-                    </td>
-                `;
-
-                tbody.appendChild(tr);
-            });
-        }
-
-        // Document Modal Handlers
-        function openDocumentModal(docId = null) {
-            const user = appState.currentUser;
-            const isAdmin = user.role === 'admin';
-
-            document.getElementById('documentForm').reset();
-            document.getElementById('fileUploadLabel').textContent = "Klik untuk memilih file dokumen";
-            appState.selectedFileTemp = null;
-
-            // Auto fill current date
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('docUploadDate').value = today;
-
-            // Auto set PIC
-            document.getElementById('docPic').value = user.name;
-
-            // Show/Hide Admin specific fields
-            const adminFields = document.getElementById('adminDocFields');
-            if (isAdmin) {
-                adminFields.classList.remove('hidden');
-            } else {
-                adminFields.classList.add('hidden');
-            }
-
-            if (docId) {
-                // Edit mode
-                const doc = appState.documents.find(d => d.id === docId);
-                if (doc) {
-                    document.getElementById('docModalTitle').textContent = "Edit Detail Dokumen";
-                    document.getElementById('docId').value = doc.id;
-                    document.getElementById('docArea').value = doc.area;
-                    document.getElementById('docUploadDate').value = doc.uploadDate;
-                    document.getElementById('docYear').value = doc.year;
-                    document.getElementById('docName').value = doc.name;
-                    document.getElementById('docPic').value = doc.pic;
-                    document.getElementById('docNotes').value = doc.notes || '';
-                    document.getElementById('fileUploadLabel').textContent = doc.fileName ? `File terlampir: ${doc.fileName}` : "Klik untuk mengubah file";
-
-                    if (isAdmin) {
-                        document.getElementById('docCustomId').value = doc.id;
-                        document.getElementById('docCompleteness').value = doc.completeness || 'Belum Lengkap';
-                        document.getElementById('docDriveUrl').value = doc.driveUrl || '';
-                    }
-                }
-            } else {
-                // Create mode
-                document.getElementById('docModalTitle').textContent = "Tambah Dokumen MCSP Baru";
-                document.getElementById('docId').value = '';
-                const newGeneratedId = `DOC-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
-                if (isAdmin) {
-                    document.getElementById('docCustomId').value = newGeneratedId;
-                    document.getElementById('docDriveUrl').value = `https://drive.google.com/drive/folders/1joocFulr1j_xbbuYrpCGGXKMiv6pIHXU-${document.getElementById('docArea').value.toLowerCase().replace(/\s+/g, '-')}`;
-                }
-            }
-
-            document.getElementById('documentModal').classList.remove('hidden');
-        }
-
-        function closeDocumentModal() {
-            document.getElementById('documentModal').classList.add('hidden');
-        }
-
-        function handleFileSelected(e) {
-            const file = e.target.files[0];
-            if (file) {
-                appState.selectedFileTemp = file.name;
-                document.getElementById('fileUploadLabel').textContent = `Terpilih: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
-            }
-        }
-
-        function saveDocument(e) {
-            e.preventDefault();
-            const user = appState.currentUser;
-            const isAdmin = user.role === 'admin';
-
-            const id = document.getElementById('docId').value;
-            const area = document.getElementById('docArea').value;
-            const uploadDate = document.getElementById('docUploadDate').value;
-            const year = document.getElementById('docYear').value;
-            const name = document.getElementById('docName').value.trim();
-            const pic = document.getElementById('docPic').value;
-            const notes = document.getElementById('docNotes').value.trim();
-
-            let completeness = "Belum Lengkap";
-            let driveUrl = `https://drive.google.com/drive/folders/1joocFulr1j_xbbuYrpCGGXKMiv6pIHXU-${area.toLowerCase().replace(/\s+/g, '-')}`;
-
-            if (isAdmin) {
-                completeness = document.getElementById('docCompleteness').value;
-                driveUrl = document.getElementById('docDriveUrl').value.trim() || driveUrl;
-            }
-
-            const fileName = appState.selectedFileTemp || (id ? appState.documents.find(d => d.id === id)?.fileName : `${name.replace(/\s+/g, '_')}.pdf`);
-
-            if (id) {
-                // Edit existing doc
-                const index = appState.documents.findIndex(d => d.id === id);
-                if (index !== -1) {
-                    appState.documents[index] = {
-                        ...appState.documents[index],
-                        area, uploadDate, year, name, notes, fileName,
-                        ...(isAdmin ? { completeness, driveUrl } : {})
-                    };
-                    logActivity(`Memperbarui dokumen: ${name}`);
-                    showToast('Dokumen berhasil diperbarui', 'success');
-                }
-            } else {
-                // Add new doc
-                const newDoc = {
-                    id: isAdmin ? document.getElementById('docCustomId').value : `DOC-${year}-${Math.floor(1000 + Math.random() * 9000)}`,
-                    name, area, year, uploadDate, pic,
-                    completeness, driveUrl, notes, fileName
-                };
-                appState.documents.unshift(newDoc);
-                logActivity(`Menambahkan dokumen baru: ${name} (${area})`);
-                showToast('Dokumen baru berhasil ditambahkan', 'success');
-            }
-
-            saveState();
-            closeDocumentModal();
-            renderDocumentsTable();
-            updateDashboardStats();
-        }
-
-        function editDocument(id) {
-            openDocumentModal(id);
-        }
-
-        function deleteDocument(id) {
-            const doc = appState.documents.find(d => d.id === id);
-            if (!doc) return;
-
-            // Custom UI Modal Confirmation logic
-            if (confirm(`Apakah Anda yakin ingin menghapus dokumen "${doc.name}"?`)) {
-                appState.documents = appState.documents.filter(d => d.id !== id);
-                saveState();
-                logActivity(`Menghapus dokumen: ${doc.name}`);
-                showToast('Dokumen telah dihapus', 'info');
-                renderDocumentsTable();
-                updateDashboardStats();
-            }
-        }
-
-        // Laporan View Logic
-        function renderReportContent() {
-            const user = appState.currentUser;
-            const selectedArea = document.getElementById('reportAreaFilter').value;
-            const selectedYear = document.getElementById('reportYearFilter').value;
-
-            const isUserRegular = user.role !== 'admin';
-
-            // Regular user filter restriction: Only see their own uploaded documents
-            let userDocs = appState.documents.filter(doc => {
-                const yearMatch = doc.year === selectedYear;
-                const areaMatch = selectedArea === 'ALL' ? true : doc.area === selectedArea;
-                const picMatch = isUserRegular ? doc.pic === user.name : true;
-                const areaPerm = isUserRegular ? user.allowedAreas.includes(doc.area) : true;
-                return yearMatch && areaMatch && picMatch && areaPerm;
-            });
-
-            // Calculate progress per visible area
-            const progressContainer = document.getElementById('reportProgressCards');
-            progressContainer.innerHTML = '';
-
-            const visibleAreas = MCSP_AREAS.filter(area => isUserRegular ? user.allowedAreas.includes(area) : true);
-
-            const areaActualCounts = [];
-            const areaTargetCounts = [];
-
-            visibleAreas.forEach(area => {
-                if (selectedArea !== 'ALL' && selectedArea !== area) return;
-
-                const actual = userDocs.filter(d => d.area === area).length;
-                const target = appState.targets[area] || 10;
-                const percent = Math.min(Math.round((actual / target) * 100), 100);
-
-                areaActualCounts.push(actual);
-                areaTargetCounts.push(target);
-
-                const card = document.createElement('div');
-                card.className = "bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm space-y-2";
-                card.innerHTML = `
-                    <div class="flex items-center justify-between text-xs">
-                        <span class="font-bold text-slate-800">${area}</span>
-                        <span class="font-bold text-indigo-600">${percent}%</span>
-                    </div>
-                    <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                        <div class="bg-indigo-600 h-full rounded-full transition-all duration-300" style="width: ${percent}%"></div>
-                    </div>
-                    <p class="text-[11px] text-slate-500">${actual} terinput dari ${target} target</p>
-                `;
-                progressContainer.appendChild(card);
-            });
-
-            // Render Comparison Chart
-            const ctxComp = document.getElementById('chartReportComparison').getContext('2d');
-            if (chartReportCompInstance) chartReportCompInstance.destroy();
-
-            chartReportCompInstance = new Chart(ctxComp, {
-                type: 'bar',
-                data: {
-                    labels: visibleAreas.map(a => a.length > 15 ? a.substring(0, 15) + '...' : a),
-                    datasets: [
-                        {
-                            label: 'Dokumen Terinput',
-                            data: areaActualCounts,
-                            backgroundColor: '#6366f1',
-                            borderRadius: 6
-                        },
-                        {
-                            label: 'Target Tahun',
-                            data: areaTargetCounts,
-                            backgroundColor: '#cbd5e1',
-                            borderRadius: 6
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
-                }
-            });
-        }
-
-        // Print/Download Laporan Modal
-        function openPrintModal() {
-            const user = appState.currentUser;
-            const selectedArea = document.getElementById('reportAreaFilter').value;
-            const selectedYear = document.getElementById('reportYearFilter').value;
-
-            document.getElementById('printReportMetaDate').textContent = `Dicetak oleh: ${user.name} | Tanggal: ${new Date().toLocaleDateString('id-ID')}`;
-
-            // 1. Populate Summary Table
-            const summaryBody = document.getElementById('printReportSummaryBody');
-            summaryBody.innerHTML = '';
-
-            const isUserRegular = user.role !== 'admin';
-            const visibleAreas = MCSP_AREAS.filter(area => isUserRegular ? user.allowedAreas.includes(area) : true);
-
-            visibleAreas.forEach((area, index) => {
-                if (selectedArea !== 'ALL' && selectedArea !== area) return;
-
-                const actual = appState.documents.filter(d => d.area === area && d.year === selectedYear && (isUserRegular ? d.pic === user.name : true)).length;
-                const target = appState.targets[area] || 10;
-                const percent = Math.min(Math.round((actual / target) * 100), 100);
-
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td class="border border-slate-300 p-2 text-center">${index + 1}</td>
-                    <td class="border border-slate-300 p-2 font-semibold">${area}</td>
-                    <td class="border border-slate-300 p-2 text-center font-bold text-slate-800">${actual}</td>
-                    <td class="border border-slate-300 p-2 text-center">${target}</td>
-                    <td class="border border-slate-300 p-2 text-center font-bold text-indigo-700">${percent}%</td>
-                `;
-                summaryBody.appendChild(tr);
-            });
-
-            // 2. Populate Detailed Docs Table
-            const docsBody = document.getElementById('printReportDocsBody');
-            docsBody.innerHTML = '';
-
-            const filteredDocs = appState.documents.filter(doc => {
-                const yearMatch = doc.year === selectedYear;
-                const areaMatch = selectedArea === 'ALL' ? true : doc.area === selectedArea;
-                const userMatch = isUserRegular ? doc.pic === user.name : true;
-                return yearMatch && areaMatch && userMatch;
-            });
-
-            filteredDocs.forEach((doc, idx) => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td class="border border-slate-300 p-2 text-center">${idx + 1}</td>
-                    <td class="border border-slate-300 p-2 font-bold">${doc.name}</td>
-                    <td class="border border-slate-300 p-2">${doc.area}</td>
-                    <td class="border border-slate-300 p-2 text-center">${doc.year}</td>
-                    <td class="border border-slate-300 p-2 text-center">${doc.uploadDate}</td>
-                    <td class="border border-slate-300 p-2">${doc.pic}</td>
-                `;
-                docsBody.appendChild(tr);
-            });
-
-            document.getElementById('printModal').classList.remove('hidden');
-        }
-
-        function closePrintModal() {
-            document.getElementById('printModal').classList.add('hidden');
-        }
-
-        // Edit Targets Modal (Admin only)
-        function openTargetModal() {
-            const container = document.getElementById('targetInputsContainer');
-            container.innerHTML = '';
-
-            MCSP_AREAS.forEach(area => {
-                const div = document.createElement('div');
-                div.className = "flex items-center justify-between gap-3 p-2 bg-slate-50 rounded-xl border border-slate-200";
-                div.innerHTML = `
-                    <span class="text-xs font-semibold text-slate-700">${area}</span>
-                    <input type="number" min="1" max="100" name="target_${area}" value="${appState.targets[area] || 10}" 
-                        class="w-20 bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs text-center font-bold text-slate-800 focus:outline-none">
-                `;
-                container.appendChild(div);
-            });
-
-            document.getElementById('targetModal').classList.remove('hidden');
-        }
-
-        function closeTargetModal() {
-            document.getElementById('targetModal').classList.add('hidden');
-        }
-
-        function saveTargetChanges(e) {
-            e.preventDefault();
-            MCSP_AREAS.forEach(area => {
-                const val = document.querySelector(`input[name="target_${area}"]`).value;
-                appState.targets[area] = parseInt(val, 10) || 10;
-            });
-
-            saveState();
-            logActivity(`Memperbarui target tahunan dokumen MCSP`);
-            showToast('Target dokumen berhasil disimpan', 'success');
-            closeTargetModal();
-            renderReportContent();
-        }
-
-        // User Management View Logic (Admin Only)
-        function renderUsersTable() {
-            const tbody = document.getElementById('usersTableBody');
-            tbody.innerHTML = '';
-
-            appState.users.forEach(u => {
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50 border-b border-slate-100";
-
-                const isMasterAdmin = u.username === 'inspektorat_admin';
-                const areasList = u.allowedAreas.length === MCSP_AREAS.length 
-                    ? `<span class="px-2 py-0.5 bg-indigo-100 text-indigo-700 font-bold rounded-md text-[10px]">Semua Area (8)</span>`
-                    : u.allowedAreas.map(a => `<span class="inline-block px-1.5 py-0.5 bg-slate-100 text-slate-700 rounded text-[10px] mr-1 mb-1">${a}</span>`).join('');
-
-                tr.innerHTML = `
-                    <td class="py-3 px-4 font-bold text-slate-800">${u.name}</td>
-                    <td class="py-3 px-4 font-mono text-slate-600">${u.username}</td>
-                    <td class="py-3 px-4">
-                        <span class="font-mono text-slate-400">••••••••</span>
-                    </td>
-                    <td class="py-3 px-4">
-                        <span class="px-2 py-0.5 rounded-md text-[10px] font-bold ${u.role === 'admin' ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-600'}">
-                            ${u.role === 'admin' ? 'Admin Utama' : 'User PIC'}
-                        </span>
-                    </td>
-                    <td class="py-3 px-4">${areasList}</td>
-                    <td class="py-3 px-4 text-center">
-                        <div class="flex items-center justify-center gap-1">
-                            <button onclick="editUser('${u.id}')" title="Edit User" class="p-1.5 text-slate-400 hover:text-indigo-600 rounded-lg hover:bg-indigo-50 transition">
-                                <i class="fa-solid fa-user-pen"></i>
-                            </button>
-                            ${!isMasterAdmin ? `
-                                <button onclick="deleteUser('${u.id}')" title="Hapus User" class="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition">
-                                    <i class="fa-solid fa-user-xmark"></i>
-                                </button>
-                            ` : ''}
-                        </div>
-                    </td>
-                `;
-
-                tbody.appendChild(tr);
-            });
-        }
-
-        function openUserModal(userId = null) {
-            document.getElementById('userForm').reset();
-
-            // Populate checkboxes
-            const container = document.getElementById('areaCheckboxes');
-            container.innerHTML = MCSP_AREAS.map(area => `
-                <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
-                    <input type="checkbox" name="userAllowedArea" value="${area}" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
-                    <span>${area}</span>
-                </label>
-            `).join('');
-
-            if (userId) {
-                const u = appState.users.find(x => x.id === userId);
-                if (u) {
-                    document.getElementById('userModalTitle').textContent = "Edit Pengguna";
-                    document.getElementById('userId').value = u.id;
-                    document.getElementById('userFullName').value = u.name;
-                    document.getElementById('userUsername').value = u.username;
-                    document.getElementById('userPassword').value = u.password;
-                    document.getElementById('userRole').value = u.role;
-
-                    // Check areas
-                    document.querySelectorAll('input[name="userAllowedArea"]').forEach(cb => {
-                        cb.checked = u.allowedAreas.includes(cb.value);
-                    });
-                }
-            } else {
-                document.getElementById('userModalTitle').textContent = "Tambah Pengguna Baru";
-                document.getElementById('userId').value = '';
-            }
-
-            toggleAreaCheckboxes();
-            document.getElementById('userModal').classList.remove('hidden');
-        }
-
-        function closeUserModal() {
-            document.getElementById('userModal').classList.add('hidden');
-        }
-
-        function toggleAreaCheckboxes() {
-            const role = document.getElementById('userRole').value;
-            const container = document.getElementById('areaAccessContainer');
-            if (role === 'admin') {
-                container.classList.add('hidden');
-            } else {
-                container.classList.remove('hidden');
-            }
-        }
-
-        function saveUser(e) {
-            e.preventDefault();
-            const id = document.getElementById('userId').value;
-            const name = document.getElementById('userFullName').value.trim();
-            const username = document.getElementById('userUsername').value.trim();
-            const password = document.getElementById('userPassword').value;
-            const role = document.getElementById('userRole').value;
-
-            let allowedAreas = [];
-            if (role === 'admin') {
-                allowedAreas = [...MCSP_AREAS];
-            } else {
-                document.querySelectorAll('input[name="userAllowedArea"]:checked').forEach(cb => {
-                    allowedAreas.push(cb.value);
-                });
-            }
-
-            if (id) {
-                const idx = appState.users.findIndex(u => u.id === id);
-                if (idx !== -1) {
-                    appState.users[idx] = { id, name, username, password, role, allowedAreas };
-                    logActivity(`Memperbarui data pengguna: ${name}`);
-                    showToast('Pengguna berhasil diperbarui', 'success');
-                }
-            } else {
-                const newUser = {
-                    id: 'usr-' + Date.now(),
-                    name, username, password, role, allowedAreas
-                };
-                appState.users.push(newUser);
-                logActivity(`Menambahkan pengguna baru: ${name}`);
-                showToast('Pengguna baru berhasil dibuat', 'success');
-            }
-
-            saveState();
-            closeUserModal();
-            renderUsersTable();
-        }
-
-        function editUser(id) {
-            openUserModal(id);
-        }
-
-        function deleteUser(id) {
-            const u = appState.users.find(x => x.id === id);
-            if (!u) return;
-
-            if (confirm(`Hapus pengguna "${u.name}"?`)) {
-                appState.users = appState.users.filter(x => x.id !== id);
-                saveState();
-                logActivity(`Menghapus pengguna: ${u.name}`);
-                showToast('Pengguna dihapus', 'info');
-                renderUsersTable();
-            }
-        }
-
-        // Activity Logs View
-        function renderActivityLogs() {
-            const timeline = document.getElementById('activityTimeline');
-            timeline.innerHTML = '';
-
-            if (appState.activityLogs.length === 0) {
-                timeline.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">Belum ada aktivitas tercatat</p>`;
-                return;
-            }
-
-            appState.activityLogs.forEach(log => {
-                const item = document.createElement('div');
-                item.className = "flex items-start gap-3 p-3 bg-slate-50/80 rounded-xl border border-slate-100";
-                item.innerHTML = `
-                    <div class="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs mt-0.5">
-                        <i class="fa-solid fa-clock-rotate-left"></i>
-                    </div>
-                    <div class="flex-1">
-                        <p class="text-xs font-bold text-slate-800">${log.user}</p>
-                        <p class="text-xs text-slate-600 mt-0.5">${log.action}</p>
-                        <p class="text-[10px] text-slate-400 mt-1">${log.time}</p>
-                    </div>
-                `;
-                timeline.appendChild(item);
-            });
-        }
-
-        function clearActivityLogs() {
-            if (confirm("Bersihkan semua catatan aktivitas?")) {
-                appState.activityLogs = [];
-                saveState();
-                renderActivityLogs();
-                showToast("Log aktivitas dibersihkan", "info");
-            }
-        }
-
-        // Utility: Toggle password input visibility
-        function togglePasswordVisibility(inputId, iconId) {
-            const input = document.getElementById(inputId);
-            const icon = document.getElementById(iconId);
-            if (input.type === 'password') {
-                input.type = 'text';
-                icon.classList.remove('fa-eye');
-                icon.classList.add('fa-eye-slash');
-            } else {
-                input.type = 'password';
-                icon.classList.remove('fa-eye-slash');
-                icon.classList.add('fa-eye');
-            }
-        }
-
-        // Utility: Custom Toast Notifications
-        function showToast(message, type = 'info') {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-
-            const bg = type === 'success' ? 'bg-emerald-600' : (type === 'error' ? 'bg-rose-600' : 'bg-slate-800');
-            
-            toast.className = `${bg} text-white px-4 py-3 rounded-xl shadow-lg text-xs font-medium flex items-center gap-2 transform transition duration-300 translate-y-2 opacity-0 pointer-events-auto`;
-            toast.innerHTML = `
-                <i class="fa-solid ${type === 'success' ? 'fa-circle-check' : (type === 'error' ? 'fa-triangle-exclamation' : 'fa-circle-info')}"></i>
-                <span>${message}</span>
-            `;
-
-            container.appendChild(toast);
-
-            setTimeout(() => {
-                toast.classList.remove('translate-y-2', 'opacity-0');
-            }, 10);
-
-            setTimeout(() => {
-                toast.classList.add('opacity-0', 'translate-y-2');
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
-        }
-    </script>
+  </div>
+  <div class="table-wrap scroll-x">
+    <table>
+      <thead><tr><th>Waktu</th><th>Pengguna</th><th>Aksi</th><th>Detail</th></tr></thead>
+      <tbody>${rows || `<tr><td colspan="4" class="table-empty">Belum ada aktivitas tercatat.</td></tr>`}</tbody>
+    </table>
+  </div>
+  `;
+}
+
+/* ============================================================
+   MODALS
+   ============================================================ */
+function closeModal(){STATE.modal=null; render();}
+function renderModal(){
+  const m=STATE.modal;
+  let inner='';
+  if(m.type==='status'){
+    const doc=DB.documents.find(d=>d.id===m.id);
+    inner=`
+      <div class="modal-head"><h3>Kelengkapan Dokumen</h3><button class="modal-close" onclick="closeModal()">${ICONS.x}</button></div>
+      <div class="modal-body">
+        <div class="field-hint" style="margin-bottom:14px; font-size:12.5px;">Dokumen: <b style="color:var(--text-primary)">${esc(doc.namaDokumen)}</b></div>
+        <div class="field">
+          <label>Status Kelengkapan</label>
+          <select id="mStatus">
+            <option value="Lengkap" ${doc.status==='Lengkap'?'selected':''}>Lengkap</option>
+            <option value="Belum Lengkap" ${doc.status==='Belum Lengkap'?'selected':''}>Belum Lengkap</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Catatan untuk Pengguna</label>
+          <textarea id="mCatatan" rows="3" placeholder="Jelaskan berkas apa saja yang belum lengkap...">${esc(doc.catatan)}</textarea>
+          <div class="field-hint">Catatan ini akan tampil kepada pengguna terkait pada Data Dokumen.</div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-outline" onclick="closeModal()">Batal</button>
+        <button class="btn btn-primary" onclick="saveStatus('${doc.id}')">Simpan</button>
+      </div>`;
+  } else if(m.type==='target'){
+    const cur = getTarget(STATE.laporan.year, m.areaId);
+    inner=`
+      <div class="modal-head"><h3>Ubah Target Dokumen</h3><button class="modal-close" onclick="closeModal()">${ICONS.x}</button></div>
+      <div class="modal-body">
+        <div class="field-hint" style="margin-bottom:14px; font-size:12.5px;">${esc(areaName(m.areaId))} &middot; Tahun ${STATE.laporan.year}</div>
+        <div class="field">
+          <label>Target Jumlah Dokumen</label>
+          <input type="number" id="mTargetVal" min="0" value="${cur}">
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-outline" onclick="closeModal()">Batal</button>
+        <button class="btn btn-primary" onclick="saveTarget('${m.areaId}')">Simpan</button>
+      </div>`;
+  } else if(m.type==='confirmDeleteDoc'){
+    const doc=DB.documents.find(d=>d.id===m.id);
+    inner=`
+      <div class="modal-head"><h3>Hapus Dokumen</h3><button class="modal-close" onclick="closeModal()">${ICONS.x}</button></div>
+      <div class="modal-body">
+        <div class="alert alert-warn">${ICONS.alert}<span>Anda yakin ingin menghapus dokumen "<b>${esc(doc.namaDokumen)}</b>"? Tindakan ini tidak dapat dibatalkan.</span></div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-outline" onclick="closeModal()">Batal</button>
+        <button class="btn btn-primary" style="background:var(--danger);" onclick="doDeleteDoc('${doc.id}')">Ya, Hapus</button>
+      </div>`;
+  } else if(m.type==='confirmDeleteUser'){
+    const usr=DB.users.find(x=>x.id===m.id);
+    inner=`
+      <div class="modal-head"><h3>Hapus Pengguna</h3><button class="modal-close" onclick="closeModal()">${ICONS.x}</button></div>
+      <div class="modal-body">
+        <div class="alert alert-warn">${ICONS.alert}<span>Anda yakin ingin menghapus akun "<b>${esc(usr.username)}</b>" (${esc(usr.name)})? Dokumen yang sudah diinput oleh pengguna ini akan tetap tersimpan.</span></div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-outline" onclick="closeModal()">Batal</button>
+        <button class="btn btn-primary" style="background:var(--danger);" onclick="doDeleteUser('${usr.id}')">Ya, Hapus</button>
+      </div>`;
+  }
+  return `<div class="modal-overlay" onclick="if(event.target===this) closeModal()"><div class="modal-box">${inner}</div></div>`;
+}
+
+/* ============================================================
+   ROOT RENDER
+   ============================================================ */
+function render(){
+  const root=document.getElementById('root');
+  root.innerHTML = STATE.currentUser ? renderShell() : renderLogin();
+}
+window.addEventListener('resize', ()=>{ /* keep layout responsive without forcing re-render loops */ });
+render();
+</script>
 </body>
 </html>
