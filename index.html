@@ -321,7 +321,7 @@ const DRIVE_ACCOUNT = 'mcspburuselatan@gmail.com';
 function areaOf(id){return AREAS.find(a=>a.id===id);}
 function areaName(id){const a=areaOf(id); return a?a.name:id;}
 function areaColor(id){const a=areaOf(id); return a?a.color:'#888';}
-function driveFolderUrl(areaId, year){return 'https://drive.google.com/drive/folders/1kqOe9wv5uY45goXNviZ3mMfv7dQyucVK?usp=drive_link'+areaId+'-'+year;}
+function driveFolderUrl(areaId, year){return 'https://drive.google.com/drive/folders/MCSP-'+areaId+'-'+year;}
 
 const DB = {
   users:[
@@ -882,7 +882,7 @@ function dokumenFormView(){
       ${admin ? `
       <div class="field">
         <label>Keterangan (Link Penyimpanan Google Drive)</label>
-        <input type="text" id="fLink" placeholder="https://drive.google.com/drive/folders/1kqOe9wv5uY45goXNviZ3mMfv7dQyucVK?usp=drive_link" value="${editing?esc(editing.driveLink||''):''}">
+        <input type="text" id="fLink" placeholder="https://drive.google.com/..." value="${editing?esc(editing.driveLink||''):''}">
         <div class="field-hint">${ICONS.lock} Kolom ini hanya dapat dilihat oleh Admin Utama, tidak ditampilkan kepada pengguna.</div>
       </div>` : `
       <div class="alert alert-info" style="margin-bottom:16px;">${ICONS.info}<span>Link penyimpanan dokumen di Google Drive akan dikelola oleh Admin Utama dan tidak ditampilkan di akun Anda.</span></div>
@@ -1012,6 +1012,7 @@ function pageLaporan(){
       <select onchange="STATE.laporan.year=parseInt(this.value); render();">${yearOptions}</select>
     </div>
     <div style="flex:1"></div>
+    ${admin ? `<button class="btn btn-outline" onclick="openTargetManager()">${ICONS.edit} Kelola Semua Target</button>` : ''}
     <button class="btn btn-gold" onclick="window.print()">${ICONS.download} Unduh Laporan (PDF)</button>
   </div>
 
@@ -1053,6 +1054,27 @@ function saveTarget(areaId){
   const val = parseInt(document.getElementById('mTargetVal').value)||0;
   setTarget(STATE.laporan.year, areaId, val);
   logAct('Edit Target Laporan', 'Mengubah target '+areaName(areaId)+' tahun '+STATE.laporan.year+' menjadi '+val);
+  STATE.modal=null;
+  render();
+}
+function openTargetManager(){
+  STATE.modal={type:'targetManager'};
+  render();
+}
+function saveAllTargets(){
+  const year=STATE.laporan.year;
+  const changes=[];
+  AREAS.forEach(a=>{
+    const el=document.getElementById('mtAll_'+a.id);
+    if(!el) return;
+    const val=parseInt(el.value)||0;
+    const before=getTarget(year,a.id);
+    if(val!==before) changes.push(areaName(a.id)+': '+before+' -> '+val);
+    setTarget(year, a.id, val);
+  });
+  if(changes.length){
+    logAct('Edit Target Laporan', 'Memperbarui target tahun '+year+' ('+changes.join(', ')+')');
+  }
   STATE.modal=null;
   render();
 }
@@ -1291,6 +1313,26 @@ function renderModal(){
       <div class="modal-foot">
         <button class="btn btn-outline" onclick="closeModal()">Batal</button>
         <button class="btn btn-primary" onclick="saveTarget('${m.areaId}')">Simpan</button>
+      </div>`;
+  } else if(m.type==='targetManager'){
+    const year=STATE.laporan.year;
+    const rowsHtml = AREAS.map(a=>`
+      <div class="form-row" style="align-items:center; grid-template-columns:1fr 120px; margin-bottom:10px;">
+        <div style="font-size:13px; font-weight:600; display:flex; align-items:center; gap:8px;">
+          <span style="width:8px; height:8px; border-radius:50%; background:${a.color}; flex-shrink:0; display:inline-block;"></span>
+          ${esc(a.name)}
+        </div>
+        <input type="number" min="0" id="mtAll_${a.id}" value="${getTarget(year,a.id)}">
+      </div>`).join('');
+    inner=`
+      <div class="modal-head"><h3>Kelola Semua Target</h3><button class="modal-close" onclick="closeModal()">${ICONS.x}</button></div>
+      <div class="modal-body">
+        <div class="field-hint" style="margin-bottom:16px; font-size:12.5px;">Atur target jumlah dokumen untuk seluruh area MCSP pada tahun ${year}.</div>
+        ${rowsHtml}
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-outline" onclick="closeModal()">Batal</button>
+        <button class="btn btn-primary" onclick="saveAllTargets()">Simpan Semua</button>
       </div>`;
   } else if(m.type==='confirmDeleteDoc'){
     const doc=DB.documents.find(d=>d.id===m.id);
