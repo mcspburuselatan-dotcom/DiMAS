@@ -697,7 +697,6 @@ function renderLogin(){
 </div>
 <h1>DiMAS</h1>
 <p class="sub">Digitalisasi MCSP Arsip Sistem</p>
-      
       ${STATE.loginError ? `<div class="login-error">${ICONS.alert}<span>${esc(STATE.loginError)}</span></div>` : ''}
       <form onsubmit="return doLogin(event)">
         <div class="field">
@@ -713,7 +712,10 @@ function renderLogin(){
         </div>
         <button type="submit" class="btn btn-primary btn-block" style="margin-top:6px; padding:11px;">Masuk</button>
       </form>
-    
+      <div class="login-hint-box">
+        <b>Akun Admin Utama (Inspektorat):</b><br>
+        Username: <span class="mono">anasyantik</span> &nbsp; Password: <span class="mono">123anas</span>
+      </div>
     </div>
   </div>`;
 }
@@ -786,7 +788,9 @@ function renderShell(){
     <div class="overlay ${STATE.sidebarOpen && window.innerWidth<=900 ?'show':''}" onclick="toggleSidebar()"></div>
     <aside class="sidebar ${sidebarClass}">
       <div class="sidebar-head">
-        <div class="sidebar-logo">DM</div>
+        <div class="login-logo">
+  <img src="logo-kabupaten.png" alt="Logo Kabupaten">
+</div>>
         <div>
           <div class="name">DiMAS</div>
           <div class="tag">MCSP ARSIP SISTEM</div>
