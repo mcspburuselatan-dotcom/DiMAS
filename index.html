@@ -470,8 +470,16 @@ const STATE = {
       dicatat seperti sebelumnya tapi berkasnya tidak diunggah ke Drive.
    ============================================================ */
 const CONFIG = {
-  FIREBASE: null, // <-- isi dgn objek firebaseConfig dari Firebase Console, mis: {apiKey:'...', authDomain:'...', projectId:'...', ...}
-  GOOGLE_DRIVE_CLIENT_ID: '', // <-- isi dgn OAuth Client ID dari Google Cloud Console
+  FIREBASE: {
+    apiKey: "AIzaSyCrTDo28WewabsmtkWO3uhe4EFsvsE8Z7s",
+    authDomain: "dimas-mcsp.firebaseapp.com",
+    projectId: "dimas-mcsp",
+    storageBucket: "dimas-mcsp.firebasestorage.app",
+    messagingSenderId: "288563612621",
+    appId: "1:288563612621:web:c06480d15bd570d6031284",
+    measurementId: "G-CCF0WDJFJP"
+  },
+  GOOGLE_DRIVE_CLIENT_ID: '842900602425-vmpco7ajbas66vjdjb6muaaj97c3baen.apps.googleusercontent.com',
 };
 const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive';
 
