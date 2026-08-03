@@ -538,8 +538,8 @@ async function pushStateToFirestore(){
 }
 async function bootstrap(){
   if(firestoreEnabled()){
-    initFirestore();
     try{
+      initFirestore();
       const snap = await fsDocRef.get();
       if(snap.exists && snap.data().db){
         const incoming = snap.data().db;
@@ -1212,7 +1212,15 @@ async function saveDokumen(e){
     if(submitBtn){ submitBtn.disabled=true; submitBtn.textContent='Mengunggah berkas...'; }
     const progWrap=document.getElementById('fFileProgress');
     if(progWrap) progWrap.innerHTML = `<div class="field-hint">Mengunggah ke folder Google Drive area ${esc(areaName(area))}...</div>`;
-    const uploaded = await uploadFileToDrive(area, STATE.dokumen.tempFileData);
+    let uploaded = null;
+    try{
+      uploaded = await uploadFileToDrive(area, STATE.dokumen.tempFileData);
+    }catch(err){
+      console.error('Gagal upload ke Google Drive:', err);
+      if(submitBtn){ submitBtn.disabled=false; submitBtn.innerHTML=`${ICONS.check} Simpan Dokumen`; }
+      if(progWrap) progWrap.innerHTML = `<div class="field-hint" style="color:var(--danger);">Gagal mengunggah ke Google Drive: ${esc(err.message||String(err))}</div>`;
+      return false;
+    }
     if(!uploaded){
       if(submitBtn){ submitBtn.disabled=false; submitBtn.innerHTML=`${ICONS.check} Simpan Dokumen`; }
       if(progWrap) progWrap.innerHTML = `<div class="field-hint" style="color:var(--danger);">Gagal mengunggah berkas ke Google Drive. Periksa koneksi lalu coba lagi.</div>`;
