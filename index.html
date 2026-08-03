@@ -127,7 +127,14 @@ input,select,textarea{font-family:inherit; font-size:14px;}
 }
 .sidebar.closed{transform:translateX(-100%);}
 .sidebar-head{padding:20px 20px 16px; display:flex; align-items:center; gap:11px; border-bottom:1px solid rgba(255,255,255,0.08);}
-.sidebar-logo{width:38px; height:38px; border-radius:9px; background:var(--gold); color:var(--navy); display:flex; align-items:center; justify-content:center; font-family:'Plus Jakarta Sans'; font-weight:800; font-size:15px; flex-shrink:0;}
+.sidebar-logo{
+  width:38px; height:38px; border-radius:9px;
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  overflow:hidden;
+}
+.sidebar-logo img{
+  width:100%; height:100%; object-fit:contain;
+}
 .sidebar-head .name{font-family:'Plus Jakarta Sans'; font-weight:700; font-size:15.5px; line-height:1.2;}
 .sidebar-head .tag{font-size:10.5px; color:rgba(255,255,255,0.55); letter-spacing:.3px; margin-top:2px;}
 .sidebar-nav{flex:1; padding:14px 12px; overflow-y:auto;}
@@ -697,6 +704,8 @@ function renderLogin(){
 </div>
 <h1>DiMAS</h1>
 <p class="sub">Digitalisasi MCSP Arsip Sistem</p>
+      <h1>DiMAS</h1>
+      <p class="sub">Digitalisasi MCSP Arsip Sistem</p>
       ${STATE.loginError ? `<div class="login-error">${ICONS.alert}<span>${esc(STATE.loginError)}</span></div>` : ''}
       <form onsubmit="return doLogin(event)">
         <div class="field">
@@ -712,10 +721,7 @@ function renderLogin(){
         </div>
         <button type="submit" class="btn btn-primary btn-block" style="margin-top:6px; padding:11px;">Masuk</button>
       </form>
-      <div class="login-hint-box">
-        <b>Akun Admin Utama (Inspektorat):</b><br>
-        Username: <span class="mono">anasyantik</span> &nbsp; Password: <span class="mono">123anas</span>
-      </div>
+      
     </div>
   </div>`;
 }
@@ -788,8 +794,8 @@ function renderShell(){
     <div class="overlay ${STATE.sidebarOpen && window.innerWidth<=900 ?'show':''}" onclick="toggleSidebar()"></div>
     <aside class="sidebar ${sidebarClass}">
       <div class="sidebar-head">
-        <div class="login-logo">
-  <img src="logo-kabupaten.png" alt="Logo Kabupaten">
+        <div class="sidebar-logo">
+  <img src="dimas.jpeg" alt="Logo Kabupaten">
 </div>>
         <div>
           <div class="name">DiMAS</div>
